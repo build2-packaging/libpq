@@ -9,5 +9,6 @@ url: https://www.postgresql.org/
 email: pgsql-general@postgresql.org; Mailing list.
 package-url: https://git.build2.org/cgit/packaging/postgresql/
 package-email: packaging@build2.org; Mailing list.
+build-email: builds@build2.org
 depends: * build2 >= 0.4.0
 depends: * bpkg >= 0.4.0
