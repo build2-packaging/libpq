@@ -6,8 +6,8 @@ license: PostgreSQL License; Permissive free software license.
 tags: postgresql, database, client, library, c, api, interface
 description-file: README
 url: https://www.postgresql.org/
-email: pgsql-general@postgresql.org; Mailing list.
 package-url: https://git.build2.org/cgit/packaging/postgresql/
+email: pgsql-general@postgresql.org; Mailing list.
 package-email: packaging@build2.org; Mailing list.
 build-email: builds@build2.org
 depends: * build2 >= 0.5.0-
