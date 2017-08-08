@@ -1,6 +1,6 @@
 : 1
 name: libpq
-version: 0+2
+version: 0+3
 summary: PostgreSQL C API client library
 license: PostgreSQL License; Permissive free software license.
 tags: postgresql, database, client, library, c, api, interface
