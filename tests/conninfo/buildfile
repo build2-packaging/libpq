@@ -1,0 +1,13 @@
+# file      : tests/conninfo/buildfile
+# copyright : Copyright (c) 2016-2017 Code Synthesis Ltd
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+# Here we reproduce the original libpq test. See the src/interfaces/libpq/test
+# directory of the original package for details.
+#
+import libs = libpq%lib{pq}
+
+exe{driver}: {h c}{* -uri-regress} $libs test{testscript} \
+             file{uri-regress.c regress.in expected.out}
+
+c.poptions =+ "-I$src_base"

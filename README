@@ -5,9 +5,8 @@ using the C programming language. For more information see:
 
 https://www.postgresql.org/
 
-This package currently contains a build2 package manager (bpkg) stub meaning
-that it can only be "built" as already installed in the underlying system (for
-example, using a system package manager).
+This package contains the original libpq library source code overlaid with the
+build2-based build system and packaged for the build2 package manager (bpkg).
 
 Send questions, bug reports, or any other feedback about the library itself to
 the PostgreSQL mailing lists. Send build system and packaging-related feedback

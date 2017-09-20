@@ -1,0 +1,26 @@
+/* file      : libpq/version.h.in -*- C -*-
+ * copyright : Copyright (c) 2016-2017 Code Synthesis Ltd
+ * license   : PostgreSQL License; see accompanying COPYRIGHT file
+ */
+
+#ifndef PG_MAJORVERSION /* Note: using the version macro itself. */
+
+/*
+ * Note that staring PostgreSQL 10 the release version schema changed (see
+ * build/bootstrap.build for details).
+ */
+#if $libpq.version.major$ < 10
+# define PG_MAJORVERSION "$libpq.version.major$.$libpq.version.minor$"
+#else
+# error "change PG_MAJORVERSION macro definition"
+# define PG_MAJORVERSION "$libpq.version.major$"
+#endif
+
+/*
+ * Is valid for both old and new version schemes (see above).
+ */
+#define PG_VERSION_NUM (10000 * $libpq.version.major$ + \
+                          100 * $libpq.version.minor$ + \
+                                $libpq.version.patch$)
+
+#endif /* PG_MAJORVERSION */

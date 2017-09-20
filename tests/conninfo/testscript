@@ -1,0 +1,5 @@
+# file      : tests/conninfo/testscript
+# copyright : Copyright (c) 2016-2017 Code Synthesis Ltd
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+$* <<<$src_base/regress.in >>>$src_base/expected.out 2>&1
