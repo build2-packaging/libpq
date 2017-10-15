@@ -80,7 +80,7 @@
 /*
  * Specific for Mac OS.
  */
-#ifdef __apple_build_version__
+#ifdef __APPLE__
 #  define HAVE_DECL_F_FULLFSYNC 1
 #else
 #  define HAVE_DECL_F_FULLFSYNC 0
@@ -89,7 +89,7 @@
 /*
  * Specific for FreeBSD and Mac OS.
  */
-#if defined(__FreeBSD__) || defined(__apple_build_version__)
+#if defined(__FreeBSD__) || defined(__APPLE__)
 #  define HAVE_DECL_STRLCAT                   1
 #  define HAVE_DECL_STRLCPY                   1
 #  define STRERROR_R_INT                      1
