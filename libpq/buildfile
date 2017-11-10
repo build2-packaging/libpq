@@ -68,10 +68,9 @@ port_dir = ($tclass == "windows" ? "win32"  : \
             $tclass == "macos"   ? "darwin" : \
             $tclass)
 
-c.poptions =+ "-I$src_base"                           \
+c.poptions =+ "-I$out_root" "-I$src_base"             \
               "-I$src_base/postgresql/port/$port_dir" \
-              "-I$src_base/postgresql"                \
-              "-I$src_root"
+              "-I$src_base/postgresql"
 
 if ($tclass == "windows")
   obj{*}: c.poptions =+ "-I$src_base/win32"
