@@ -4,7 +4,7 @@
  */
 
 /*
- * For the semanics of the following macros refer to
+ * For the semantics of the following macros refer to
  * libpq/postgresql/pg_config.h.in.orig and
  * libpq/postgresql/pg_config.h.win32.orig files.
  *
