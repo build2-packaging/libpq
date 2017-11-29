@@ -16,7 +16,6 @@ lib{pq}: c{*} h{$h} file{**.h -{$h}} file{win32/libpqdll.def} \
          file{pg_service.conf.sample}
 
 tclass = $c.target.class
-tsys   = $c.target.system
 
 if ($tclass == "windows")
   lib{pq}: win32/c{*}
@@ -78,7 +77,7 @@ c.poptions =+ "-I$out_root" "-I$src_root" "-I$src_base" \
 if ($tclass == "windows")
   obj{*}: c.poptions =+ "-I$src_base/win32"
 
-if ($tsys == "win32-msvc")
+if ($c.class == 'msvc')
 {
   c.poptions =+ "-I$src_base/postgresql/port/win32_msvc"
 
@@ -87,7 +86,7 @@ if ($tsys == "win32-msvc")
   c.poptions += -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
   c.coptions += /wd4018 /wd4244 /wd4267
 }
-else
+elif ($c.class == 'gcc')
 {
   # Omit -fexcess-precision=standard as -std=9x implies it.
   #
@@ -156,15 +155,15 @@ else
 {
   def = $src_base/win32/libpqdll.def
 
-  if ($tsys == "mingw32")
+  if ($c.target.system == "mingw32")
   {
-    libs{pq}: c.loptions += $def
     c.libs += -lsecur32 -lws2_32 -ladvapi32
+    libs{pq}: c.libs =+ $def
   }
   else
   {
-    libs{pq}: c.loptions += "/DEF:$def"
     c.libs += secur32.lib ws2_32.lib advapi32.lib
+    libs{pq}: c.libs =+ "/DEF:$def"
   }
 
   # The original package also adds the resource file to the library. The file
