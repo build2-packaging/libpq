@@ -1,4 +1,4 @@
-This document describes for libpq was packages for build2. In particular,
+This document describes how libpq was packaged for build2. In particular,
 this understanding will be useful when ugrading to a new upstream version.
 
 The original libpq library is packaged together with the PostgreSQL server and
@@ -83,8 +83,8 @@ $ cat `find . -name '*.d'` | sort -u >headers
 $ emacs headers  # Edit, leaving system headers only.
 $ fgrep PostgreSQL `cat headers`
 
-Also make sure that the macros set in libpq/postgresql/pg_config.h are still
-up to date. For that purpose obtain the macros that are used in the new source
+Also make sure that the macros set in libpq/postgresql/pg_config.h is still up
+to date. For that purpose obtain the macros that are used in the new source
 base, then obtain the macros (un)defined in the current
 libpq/postgresql/pg_config.h and compare the sets. That can be achieved
 running the following commands in the build2 project root directory:
