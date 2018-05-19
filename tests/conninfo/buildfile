@@ -7,7 +7,7 @@
 #
 import libs = libpq%lib{pq}
 
-exe{driver}: {h c}{* -uri-regress} $libs test{testscript} \
+exe{driver}: {h c}{* -uri-regress} $libs testscript      \
              file{uri-regress.c regress.in expected.out}
 
 c.poptions =+ "-I$src_base"

@@ -37,7 +37,7 @@ else
 # The version file is an internal one (it is only included from
 # postgresql/pg_config.h) so we don't distribute nor install it (see below).
 #
-h{version}: in{version} $src_root/file{manifest}
+h{version}: in{version} $src_root/manifest
 
 c.poptions += -DFRONTEND -DUNSAFE_STAT_OK -DSO_MAJOR_VERSION=$abi_major
 
