@@ -1,5 +1,5 @@
 # file      : tests/build/root.build
-# copyright : Copyright (c) 2016-2017 Code Synthesis Ltd
+# copyright : Copyright (c) 2016-2018 Code Synthesis Ltd
 # license   : PostgreSQL License; see accompanying COPYRIGHT file
 
 # Make sure libpq headers comply with an oldest C standard (see
