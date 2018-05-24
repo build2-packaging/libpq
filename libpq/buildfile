@@ -92,10 +92,12 @@ elif ($c.class == 'gcc')
   #
   c.coptions += -fno-strict-aliasing -fwrapv
 
-  # Disable warnings that pop up with -W -Wall.
+  # Disable warnings that pop up with -Wall -Wextra. Upstream doesn't seem to
+  # care about these and it is not easy to disable specific warnings in a way
+  # that works across compilers/version (some -Wno-* options are only
+  # recognized in newer versions).
   #
-  c.coptions += -Wno-unused-parameter -Wno-missing-field-initializers \
-                -Wno-sign-compare -Wno-unused-command-line-argument
+  cc.coptions += -Wno-all -Wno-extra
 }
 
 # Define SYSCONFDIR macro. This path is used as a last resort for the
