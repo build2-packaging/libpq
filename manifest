@@ -3,7 +3,7 @@ name: libpq
 
 # Note: remember to update doc-url below!
 #
-version: 9.6.5-a.0.z
+version: 9.6.5
 
 summary: PostgreSQL C API client library
 license: PostgreSQL License; Permissive free software license.
