@@ -12,7 +12,7 @@
 h = version.h libpq-fe.h libpq-events.h                  \
     postgresql/postgres_ext.h postgresql/pg_config_ext.h
 
-lib{pq}: c{*} h{$h} file{**.h -{$h}} file{win32/libpqdll.def} \
+lib{pq}: c{*} h{$h} file{**.h -{$h}} def{win32/libpqdll} \
          file{pg_service.conf.sample}
 
 tclass = $c.target.class
@@ -150,24 +150,8 @@ else
 obj{fe-connect}: c.poptions += -DSYSCONFDIR="\"$sysconfdir\""
 
 if ($tclass != "windows")
-{
   c.libs += -lpthread
-}
 else
-{
-  def = $src_base/win32/libpqdll.def
-
-  if ($c.target.system == "mingw32")
-  {
-    c.libs += -lsecur32 -lws2_32 -ladvapi32
-    libs{pq}: c.libs =+ $def
-  }
-  else
-  {
-    c.libs += secur32.lib ws2_32.lib advapi32.lib
-    libs{pq}: c.libs =+ "/DEF:$def"
-  }
-
   # The original package also adds the resource file to the library. The file
   # contains only the version information. First, libpq.rc is produced from
   # libpq.rc.in with the following command:
@@ -182,7 +166,10 @@ else
   # Afterwards libpqrc.o is linked to the library.
   #
   # @@ Currently we don't have support for the first two steps.
-}
+  #
+  c.libs += $regex.apply(secur32 ws2_32 advapi32,                           \
+                         '(.+)',                                            \
+                         $c.target.system == "mingw32" ? '-l\1' : '\1.lib')
 
 lib{pq}: cc.export.poptions = "-I$src_base" "-I$src_base/postgresql"
 
