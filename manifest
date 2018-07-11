@@ -5,9 +5,10 @@ name: libpq
 #
 version: 9.6.5+1
 
+project: postgresql
 summary: PostgreSQL C API client library
 license: PostgreSQL License; Permissive free software license.
-tags: postgresql, database, client, library, c, api, interface
+tags: database, client, library, c, api, interface
 description-file: README
 url: https://www.postgresql.org/
 doc-url: https://www.postgresql.org/docs/9.6/static/libpq.html
