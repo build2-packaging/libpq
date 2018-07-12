@@ -17,15 +17,12 @@ lib{pq}: c{*} h{$h} file{**.h -{$h}} def{win32/libpqdll} \
 
 tclass = $c.target.class
 
-if ($tclass == "windows")
-  lib{pq}: win32/c{*}
-else
-  lib{pq}: win32/file{*.c}
+windows = ($tclass == 'windows')
+macos   = ($tclass == 'macos')
+bsd     = ($tclass == 'bsd')
 
-if ($tclass != "bsd" && $tclass != "macos")
-  lib{pq}: non-bsd/c{*}
-else
-  lib{pq}: non-bsd/file{*.c}
+lib{pq}: win32/c{*}:   include = $windows
+lib{pq}: non-bsd/c{*}: include = (($bsd || $macos) == false)
 
 # See bootstrap.build for details.
 #
@@ -41,7 +38,7 @@ h{version}: in{version} $src_root/manifest
 
 c.poptions += -DFRONTEND -DUNSAFE_STAT_OK -DSO_MAJOR_VERSION=$abi_major
 
-if ($tclass != "windows")
+if! $windows
   # Note that the original package uses -pthread compiler/linker option. It is
   # currently unsupported by build2, so we use -D_REENTRANT and -lpthread
   # preprocessor/linker options instead. We also omit -D_THREAD_SAFE (synonym
@@ -63,8 +60,8 @@ else
   #
   c.poptions += -DWIN32
 
-port_dir = ($tclass == "windows" ? "win32"  : \
-            $tclass == "macos"   ? "darwin" : \
+port_dir = ($windows ? "win32"  : \
+            $macos   ? "darwin" : \
             $tclass)
 
 # Note that we add "-I$src_root" for the headers auto-generating machinery to
@@ -74,7 +71,7 @@ c.poptions =+ "-I$out_root" "-I$src_root" "-I$src_base" \
               "-I$src_base/postgresql/port/$port_dir"   \
               "-I$src_base/postgresql"
 
-if ($tclass == "windows")
+if $windows
   obj{*}: c.poptions =+ "-I$src_base/win32"
 
 if ($c.class == 'msvc')
@@ -109,13 +106,7 @@ elif ($c.class == 'gcc')
 # @@ We should probably allow to configure this macros via configuration
 #    variable config.libpq.sysconfdir.
 #
-if ($tclass == "windows")
-{
-  # win32.mak from the original package does this.
-  #
-  sysconfdir = ""
-}
-else
+if! $windows
 {
   # For the original package if the resulted sysconfdir path doesn't contain
   # the 'postgres' or 'pgsql' substring then the '/postgresql' suffix is
@@ -140,6 +131,12 @@ else
   else
     sysconfdir = /usr/local/pgsql/etc
 }
+else
+{
+  # win32.mak from the original package does this.
+  #
+  sysconfdir = ""
+}
 
 # If we ever enable National Language Support (ENABLE_NLS macro) then we will
 # need to define the LOCALEDIR macro as well. It refers to the locale data
@@ -149,7 +146,7 @@ else
 #
 obj{fe-connect}: c.poptions += -DSYSCONFDIR="\"$sysconfdir\""
 
-if ($tclass != "windows")
+if! $windows
   c.libs += -lpthread
 else
   # The original package also adds the resource file to the library. The file
