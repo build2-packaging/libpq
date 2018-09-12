@@ -3,7 +3,7 @@ name: libpq
 
 # Note: remember to update doc-url below!
 #
-version: 9.6.5+1
+version: 9.6.5+2
 
 project: postgresql
 summary: PostgreSQL C API client library
