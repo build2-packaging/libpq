@@ -17,25 +17,23 @@ lib{pq}: c{*} h{$h} file{**.h -{$h}} def{win32/libpqdll} \
 
 tclass = $c.target.class
 
-windows = ($tclass == 'windows')
-macos   = ($tclass == 'macos')
 bsd     = ($tclass == 'bsd')
+macos   = ($tclass == 'macos')
+windows = ($tclass == 'windows')
+
+gcc   = ($c.class == 'gcc')
+msvc  = ($c.class == 'msvc')
 
 lib{pq}: win32/c{*}:   include = $windows
 lib{pq}: non-bsd/c{*}: include = (($bsd || $macos) == false)
-
-# See bootstrap.build for details.
-#
-if $version.pre_release
-  lib{pq}: bin.lib.version = @"-$version.project_id"
-else
-  lib{pq}: bin.lib.version = @"-$abi_version"
 
 # The version file is an internal one (it is only included from
 # postgresql/pg_config.h) so we don't distribute nor install it (see below).
 #
 h{version}: in{version} $src_root/manifest
 
+# Build options.
+#
 c.poptions += -DFRONTEND -DUNSAFE_STAT_OK -DSO_MAJOR_VERSION=$abi_major
 
 if! $windows
@@ -72,9 +70,9 @@ c.poptions =+ "-I$out_root" "-I$src_root" "-I$src_base" \
               "-I$src_base/postgresql"
 
 if $windows
-  obj{*}: c.poptions =+ "-I$src_base/win32"
+  c.poptions =+ "-I$src_base/win32"
 
-if ($c.class == 'msvc')
+if $msvc
 {
   c.poptions =+ "-I$src_base/postgresql/port/win32_msvc"
 
@@ -83,7 +81,7 @@ if ($c.class == 'msvc')
   c.poptions += -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
   c.coptions += /wd4018 /wd4244 /wd4267
 }
-elif ($c.class == 'gcc')
+elif $gcc
 {
   # Omit -fexcess-precision=standard as -std=9x implies it.
   #
@@ -94,7 +92,7 @@ elif ($c.class == 'gcc')
   # that works across compilers/version (some -Wno-* options are only
   # recognized in newer versions).
   #
-  cc.coptions += -Wno-all -Wno-extra
+  c.coptions += -Wno-all -Wno-extra
 }
 
 # Define SYSCONFDIR macro. This path is used as a last resort for the
@@ -168,7 +166,16 @@ else
                          '(.+)',                                            \
                          $c.target.system == "mingw32" ? '-l\1' : '\1.lib')
 
+# Export options.
+#
 lib{pq}: cc.export.poptions = "-I$src_base" "-I$src_base/postgresql"
+
+# See bootstrap.build for details.
+#
+if $version.pre_release
+  lib{pq}: bin.lib.version = @"-$version.project_id"
+else
+  lib{pq}: bin.lib.version = @"-$abi_version"
 
 # Internal header (see above).
 #

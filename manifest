@@ -3,7 +3,7 @@ name: libpq
 
 # Note: remember to update doc-url below!
 #
-version: 9.6.5+3
+version: 9.6.5+4
 
 project: postgresql
 summary: PostgreSQL C API client library
@@ -17,6 +17,6 @@ package-url: https://git.build2.org/cgit/packaging/postgresql/
 email: pgsql-general@postgresql.org ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 build-email: builds@build2.org
-#builds: all
-depends: * build2 >= 0.8.0-
-depends: * bpkg >= 0.8.0-
+builds: all
+depends: * build2 >= 0.9.0
+depends: * bpkg >= 0.9.0
