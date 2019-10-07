@@ -21,6 +21,8 @@ bsd     = ($tclass == 'bsd')
 macos   = ($tclass == 'macos')
 windows = ($tclass == 'windows')
 
+msvc_runtime = ($c.target.system == 'win32-msvc')
+
 gcc   = ($c.class == 'gcc')
 msvc  = ($c.class == 'msvc')
 
@@ -72,14 +74,16 @@ c.poptions =+ "-I$out_root" "-I$src_root" "-I$src_base" \
 if $windows
   c.poptions =+ "-I$src_base/win32"
 
-if $msvc
+if $msvc_runtime
 {
   c.poptions =+ "-I$src_base/postgresql/port/win32_msvc"
 
+  c.poptions += -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
+
   # Disable warnings that pop up with /W3.
   #
-  c.poptions += -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
-  c.coptions += /wd4018 /wd4244 /wd4267
+  if $msvc
+    c.coptions += /wd4018 /wd4244 /wd4267
 }
 elif $gcc
 {
@@ -162,9 +166,9 @@ else
   #
   # @@ Currently we don't have support for the first two steps.
   #
-  c.libs += $regex.apply(secur32 ws2_32 advapi32,                           \
-                         '(.+)',                                            \
-                         $c.target.system == "mingw32" ? '-l\1' : '\1.lib')
+  c.libs += $regex.apply(secur32 ws2_32 advapi32,           \
+                         '(.+)',                            \
+                         $msvc_runtime ? '\1.lib' : '-l\1')
 
 # Export options.
 #

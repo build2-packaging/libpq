@@ -2,21 +2,18 @@
 # copyright : Copyright (c) 2016-2019 Code Synthesis Ltd
 # license   : PostgreSQL License; see accompanying COPYRIGHT file
 
-# Make sure libpq headers comply with an oldest C standard (see
-# libpq/postgresql/pg_config_ext.h for details).
-#
-c.std = 90
+c.std = 99
 
 using c
 
 h{*}: extension = h
 c{*}: extension = c
 
-if ($c.class == 'msvc')
-{
+if ($c.target.system == 'win32-msvc')
   c.poptions += -D_CRT_SECURE_NO_WARNINGS -D_SCL_SECURE_NO_WARNINGS
+
+if ($c.class == 'msvc')
   c.coptions += /wd4251 /wd4275 /wd4800
-}
 
 # Every exe{} in this subproject is by default a test.
 #
