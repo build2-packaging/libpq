@@ -1,0 +1,4 @@
+[submodule "upstream"]
+	path = upstream
+	url = https://git.postgresql.org/git/postgresql.git
+	ignore = untracked

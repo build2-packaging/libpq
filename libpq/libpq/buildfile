@@ -1,0 +1,233 @@
+# file      : libpq/buildfile
+# copyright : Copyright (c) 2016-2019 Code Synthesis Ltd
+# license   : PostgreSQL Licenes; see accompanying COPYRIGHT file
+
+import imp_libs  = libssl%lib{ssl}
+import imp_libs += libcrypto%lib{crypto}
+
+# Exclude source code of unused features (authentication methods, etc).
+#
+# @@ When it becomes possible (probably with ad hoc rules), generate
+#    libpqdll.map and libpqdll.def on the fly from pq/exports.txt applying
+#    regex replace to its lines and adding prologue/epilogue.
+#
+lib{pq}: {h   }{*                                     -version} \
+         {h   }{                                       version} \
+      pq/{h  c}{* -fe-gssapi-common -fe-secure-gssapi -*win32*} \
+      mb/{   c}{*                                             } \
+    port/{h  c}{*    -strlcpy -getaddrinfo -inet_aton -*win32*} \
+  common/{   c}{*                                             } \
+ include/{h   }{**                                            } \
+         {def }{libpqdll                                      } \
+         {file}{libpqdll.map                                  } \
+      pq/{file}{pg_service.conf.sample                        } \
+         $imp_libs
+
+tclass = $c.target.class
+tsys   = $c.target.system
+
+bsd     = ($tclass == 'bsd')
+macos   = ($tclass == 'macos')
+windows = ($tclass == 'windows')
+
+lib{pq}: port/c{strlcpy}: include = (!$bsd && !$macos)
+
+lib{pq}: pq/{h c}{*win32*                        }                     \
+       port/{h c}{*win32* +getaddrinfo +inet_aton}: include = $windows
+
+# The version file is an internal one (it is only included from pg_config.h)
+# so we don't distribute nor install it (see below).
+#
+h{version}: in{version} $src_root/manifest
+
+# Build options.
+#
+# Note that the upstream package also defines a bunch of the VAL_* macros
+# (VAL_CONFIGURE, VAL_CC, etc) that are used in get_configdata(), if defined.
+# We will omit them for the sake of simplicity.
+#
+c.poptions += -DFRONTEND -DUNSAFE_STAT_OK -DSO_MAJOR_VERSION=$abi_major
+
+if! $windows
+  # Note that the upstream package uses -pthread compiler/linker option. It is
+  # currently unsupported by build2, so we use -D_REENTRANT and -lpthread
+  # preprocessor/linker options instead. We also omit -D_THREAD_SAFE (synonym
+  # for -D_REENTRANT) and Solaris-specific -D_POSIX_PTHREAD_SEMANTICS.
+  #
+  c.poptions += -D_REENTRANT
+else
+  # Note that the upstream package defines the WIN32 macro for VC only,
+  # relying on the fact that MinGW GCC defines it by default. However, the
+  # macro disappears from the default ones if to compile with -std=c9x (as we
+  # do). So we define it for both VC and MinGW GCC.
+  #
+  # It's tempting to move this definition to libpq/pg_config.h. However this
+  # header is not included into all files that use the macro, for example,
+  # libpq/port/open.c.
+  #
+  c.poptions += -DWIN32
+
+# Note that we need to add "-I$src_root" for the headers auto-generating
+# machinery to work properly.
+#
+c.poptions =+ "-I$out_root" "-I$src_root" "-I$src_base" "-I$src_base/port" \
+              "-I$src_base/pq" "-I$src_base/include"
+
+switch $tclass, $tsys
+{
+  case 'linux'
+    c.poptions += -D_GNU_SOURCE
+
+  case 'windows', 'mingw32'
+  {
+    c.poptions += -DBUILDING_DLL -DEXEC_BACKEND
+    c.poptions =+ "-I$src_base/include/port/win32"
+  }
+  case 'windows'
+  {
+    # Probably some of the *WIN* macro definitions are not really required,
+    # but let's keep all of them for good measure.
+    #
+    c.poptions += -DEXEC_BACKEND -D_WINDLL -D__WINDOWS__ -D__WIN32__ -D_MBCS \
+                  -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
+
+    c.poptions =+ "-I$src_base/include/port/win32_msvc" \
+                  "-I$src_base/include/port/win32"
+  }
+}
+
+# Define SYSCONFDIR macro. This path is used as a last resort for the
+# pg_service.conf file search (see pq/fe-connect.c for details).
+#
+# The whole idea feels utterly broken (hello cross-compilation) so we will
+# just do bare minimum and wait and see.
+#
+# @@ We should probably allow to configure this macros via configuration
+#    variable config.libpq.sysconfdir.
+#
+# For the upstream package if the resulted sysconfdir path doesn't contain the
+# 'postgres' or 'pgsql' substring then the '/postgresql' suffix is
+# automatically appended (see the upstream INSTALL file for details). Note
+# that the same rule is applied for the datadir and docdir paths. Also if the
+# root directory is /usr, then the resulting sysconfdir path is
+# /etc/postgresql (rather than /usr/etc/postgresql).
+#
+# Let's do the same for the sysconfdir to increase the chance that libpq will
+# find the configuration file. Note that we don't install anything at this
+# path and don't amend the install.data and install.doc path variables. We
+# also use the same default path as the upstream package. Also note that on
+# Windows the default path doesn't make any sense so let's make it empty
+# instead.
+#
+if ($install.root != [null])
+{
+  root = $install.resolve($install.root)
+  sysconfdir = ($windows || $root != /usr ? $root/etc : /etc)
+
+  if! $regex.match("$sysconfdir", '.*(pgsql|postgresql).*')
+    sysconfdir = $sysconfdir/postgresql
+}
+else
+  sysconfdir = ($windows ? '' : /usr/local/pgsql/etc)
+
+# Escape backslashes and quotes in the directory path prior to representing it
+# as C string literals.
+#
+sd = $regex.replace($sysconfdir, '(\\|")', '\\\1')
+
+# If we ever enable National Language Support then we will need to define the
+# LOCALEDIR macro as well. It refers to the locale data directory and should
+# be $install.data/locale by default. We will also need to install this
+# directory (see configure script --enable-nls options and the libpq/po
+# directory in the upstream package for details).
+#
+pq/obj{fe-connect}: c.poptions += -DSYSCONFDIR="\"$sd\""
+
+switch $c.class
+{
+  case 'gcc'
+  {
+    # Omit -fexcess-precision=standard since -std=9x implies it.
+    #
+    c.coptions += -fno-strict-aliasing -fwrapv
+
+    # Disable warnings that pop up with -Wall -Wextra. Upstream doesn't seem
+    # to care about these and it is not easy to disable specific warnings in a
+    # way that works across compilers/version (some -Wno-* options are only
+    # recognized in newer versions).
+    #
+    c.coptions += -Wno-all -Wno-extra
+  }
+  case 'msvc'
+  {
+    c.coptions += /GF
+
+    # Disable warnings that pop up with /W3.
+    #
+    c.coptions += /wd4018 /wd4244 /wd4267
+  }
+}
+
+# On Windows the upstream package also adds the resource file to the library.
+# The file contains only the version information. First, libpq.rc is produced
+# from libpq.rc.in with the following command:
+#
+# sed -e 's/\(VERSION.*\),0 *$/\1,'`date '+%y%j' | \
+# sed 's/^0*//'`'/' libpq.rc.in >libpq.rc
+#
+# Then libpq.rc is compiled with:
+#
+# windres -i libpq.rc -o libpqrc.o
+#
+# Afterwards libpqrc.o is linked to the library.
+#
+# @@ Currently we don't have support for the first two steps.
+#
+switch $tclass, $tsys
+{
+  case 'windows', 'mingw32'
+    c.libs += -lsecur32 -lws2_32
+
+  case 'windows'
+    c.libs += secur32.lib ws2_32.lib advapi32.lib
+
+  case 'linux' | 'bsd'
+  {
+    # Make sure all symbols are resolvable.
+    #
+    c.loptions += -Wl,--no-undefined
+
+    c.loptions += "-Wl,--version-script=$src_base/libpqdll.map"
+
+    c.libs += -lpthread
+  }
+
+  default
+    c.libs += -lpthread
+}
+
+# Export options.
+#
+lib{pq}: cc.export.poptions = "-I$src_base" "-I$src_base/pq" \
+                              "-I$src_base/include"
+
+# See bootstrap.build for details.
+#
+if $version.pre_release
+  lib{pq}: bin.lib.version = @"-$version.project_id"
+else
+  lib{pq}: bin.lib.version = @"-$abi_major" linux@"$abi_major.$abi_minor"
+
+# Install the bare minimum of headers not recreating subdirectories.
+#
+# Note that upstream also installs several 'unofficial API' headers, that we
+# won't install.
+#
+h{*}: install = false
+
+for h: pq/{libpq-fe libpq-events} include/postgres_ext pg_config_ext
+  h{$h}@./$path.directory($h): install = include/
+
+# Install the config file example as the upstream does.
+#
+pq/file{pg_service.conf.sample}@pq/: install = data/

@@ -1,0 +1,40 @@
+# file      : build/bootstrap.build
+# copyright : Copyright (c) 2016-2019 Code Synthesis Ltd
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+project = libpq
+
+using version
+using config
+using dist
+using test
+using install
+
+# PostgreSQL releases (for quite a long time) had the 3-component versions,
+# where the first 2 components denoted a major version and the third one --
+# the minor version. This has changed starting from version 10, with the major
+# version represented by a single component. Minor releases are guaranteed to
+# be backwards-compatible and contain only bug fixes. See also:
+#
+# https://www.postgresql.org/support/versioning/
+#
+# Note that the release version is not a semantic version and we will map it to
+# the standard version as <major>.<minor>.0.
+#
+# There is no document that describes libpq ABI versioning and compatibility
+# rules, so everything that follows is implied from
+# src/interfaces/libpq/Makefile.
+#
+# The library naming schema on Linux is libpq.so.<so_major>.<so_minor>
+# (SO_MAJOR_VERSION and SO_MINOR_VERSION in the Makefile) So presumably
+# so_major is incremented on backwards-incompatible ABI changes (it hasn't
+# been for the several last major version releases). And so_minor is equal to
+# the package major version.
+#
+if ($version.major == 12 && $version.minor == 1)
+{
+  abi_major = 5
+  abi_minor = 12
+}
+else
+  fail "increment the ABI version?"

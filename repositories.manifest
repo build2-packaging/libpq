@@ -1,0 +1,6 @@
+: 1
+summary: PostgreSQL build2 package repository
+
+:
+role: prerequisite
+location: ../../openssl/openssl.git##HEAD
