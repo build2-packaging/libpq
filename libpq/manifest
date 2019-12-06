@@ -3,7 +3,7 @@ name: libpq
 
 # Note: remember to update doc-url below!
 #
-version: 12.1.0-a.0.z
+version: 12.1.0
 upstream-version: 12.1
 
 project: postgresql
