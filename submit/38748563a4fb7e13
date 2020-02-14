@@ -1,0 +1,7 @@
+: 1
+name: libpq
+version: 12.1.0+2
+upstream-version: 12.1
+project: postgresql
+summary: PostgreSQL C API client library
+license: PostgreSQL License; Permissive free software license.
