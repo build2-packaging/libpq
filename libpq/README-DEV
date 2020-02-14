@@ -59,7 +59,7 @@ the newly introduced macros, comparing the already defined and currently used
 macro sets:
 
 $ for m in `cat libpq/pg_config.h.in.orig libpq/pg_config.h.win32.orig | \
-            sed -n 's/.*#\s*\(define\|undef\)\s\{1,\}\([_A-Z0-9]\{1,\}\)\(\s.*\)\{0,1\}$/\2/p' | \
+            sed -n 's/^.*#\s*\(define\|undef\)\s\{1,\}\([_A-Z0-9]\{1,\}\)\(\s.*\)\{0,1\}$/\2/p' | \
             sort -u`; do
     if grep -q -e "\b$m\b" `find -L . -name '*.h' -a ! -name 'pg_config.h' -o -name '*.c'`; then
       echo "$m"
@@ -67,7 +67,7 @@ $ for m in `cat libpq/pg_config.h.in.orig libpq/pg_config.h.win32.orig | \
   done >used-macros
 
 $ cat libpq/pg_config.h | \
-  sed -n 's/#\s*\(define\|undef\)\s\{1,\}\([_A-Z0-9]\{1,\}\)\(\s.*\)\{0,1\}$/\2/p' | \
+  sed -n 's/^#\s*\(define\|undef\)\s\{1,\}\([_A-Z0-9]\{1,\}\)\(\s.*\)\{0,1\}$/\2/p' | \
   sort -u >defined-macros
 
 $ diff defined-macros used-macros

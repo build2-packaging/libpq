@@ -1,5 +1,4 @@
 /* file      : libpq/pg_config.h -*- C -*-
- * copyright : Copyright (c) 2016-2019 Code Synthesis Ltd
  * license   : PostgreSQL License; see accompanying COPYRIGHT file
  */
 
@@ -189,6 +188,7 @@
 #  define HAVE_DLOPEN             1
 #  define HAVE_PREAD              1
 #  define HAVE_PWRITE             1
+
 /*
  * Specific for Windows.
  */
@@ -197,10 +197,14 @@
 #  define HAVE_DECL_RTLD_GLOBAL   0
 #  define HAVE_DECL_RTLD_NOW      0
 #  define HAVE_DECL_POSIX_FADVISE 0
-#  define HAVE_GETTIMEOFDAY       1
 #  define HAVE_ISINF              1
 #  define HAVE_FUNCNAME__FUNCTION 1
 #  define USE_REPL_SNPRINTF       1
+
+/*
+ * This is not a mistake, the macro is defined opposite to the norm.
+ */
+#  define HAVE_GETTIMEOFDAY       1
 #endif
 
 /*

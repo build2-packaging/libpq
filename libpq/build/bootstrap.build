@@ -1,5 +1,4 @@
 # file      : build/bootstrap.build
-# copyright : Copyright (c) 2016-2019 Code Synthesis Ltd
 # license   : PostgreSQL License; see accompanying COPYRIGHT file
 
 project = libpq
@@ -26,7 +25,7 @@ using install
 # src/interfaces/libpq/Makefile.
 #
 # The library naming schema on Linux is libpq.so.<so_major>.<so_minor>
-# (SO_MAJOR_VERSION and SO_MINOR_VERSION in the Makefile) So presumably
+# (SO_MAJOR_VERSION and SO_MINOR_VERSION in the Makefile). So presumably
 # so_major is incremented on backwards-incompatible ABI changes (it hasn't
 # been for the several last major version releases). And so_minor is equal to
 # the package major version.

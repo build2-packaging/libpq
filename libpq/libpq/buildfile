@@ -1,6 +1,5 @@
 # file      : libpq/buildfile
-# copyright : Copyright (c) 2016-2019 Code Synthesis Ltd
-# license   : PostgreSQL Licenes; see accompanying COPYRIGHT file
+# license   : PostgreSQL Licene; see accompanying COPYRIGHT file
 
 import imp_libs  = libssl%lib{ssl}
 import imp_libs += libcrypto%lib{crypto}
@@ -19,18 +18,19 @@ lib{pq}: {h   }{*                                     -version} \
   common/{   c}{*                                             } \
  include/{h   }{**                                            } \
          {def }{libpqdll                                      } \
-         {file}{libpqdll.map                                  } \
       pq/{file}{pg_service.conf.sample                        } \
          $imp_libs
 
 tclass = $c.target.class
 tsys   = $c.target.system
 
+linux   = ($tclass == 'linux')
 bsd     = ($tclass == 'bsd')
 macos   = ($tclass == 'macos')
 windows = ($tclass == 'windows')
 
-lib{pq}: port/c{strlcpy}: include = (!$bsd && !$macos)
+lib{pq}: file{libpqdll.map}: include = ($linux || $bsd ? adhoc : false)
+lib{pq}: port/c{strlcpy}:    include = (!$bsd && !$macos)
 
 lib{pq}: pq/{h c}{*win32*                        }                     \
        port/{h c}{*win32* +getaddrinfo +inet_aton}: include = $windows
@@ -49,8 +49,8 @@ h{version}: in{version} $src_root/manifest
 c.poptions += -DFRONTEND -DUNSAFE_STAT_OK -DSO_MAJOR_VERSION=$abi_major
 
 if! $windows
-  # Note that the upstream package uses -pthread compiler/linker option. It is
-  # currently unsupported by build2, so we use -D_REENTRANT and -lpthread
+  # Note that the upstream package uses the -pthread compiler/linker option.
+  # The option is unsupported by build2 so we pass -D_REENTRANT and -lpthread
   # preprocessor/linker options instead. We also omit -D_THREAD_SAFE (synonym
   # for -D_REENTRANT) and Solaris-specific -D_POSIX_PTHREAD_SEMANTICS.
   #

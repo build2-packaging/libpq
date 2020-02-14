@@ -1,5 +1,4 @@
 /* file      : tests/conninfo/driver.c
- * copyright : Copyright (c) 2016-2019 Code Synthesis Ltd
  * license   : PostgreSQL License; see accompanying COPYRIGHT file
  */
 

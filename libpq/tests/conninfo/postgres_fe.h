@@ -1,5 +1,4 @@
 /* file      : tests/conninfo/postgres_fe.h
- * copyright : Copyright (c) 2016-2019 Code Synthesis Ltd
  * license   : PostgreSQL License; see accompanying COPYRIGHT file
  */
 
