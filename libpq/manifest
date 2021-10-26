@@ -17,7 +17,7 @@ src-url: https://git.build2.org/cgit/packaging/postgresql/postgresql/tree/libpq/
 package-url: https://git.build2.org/cgit/packaging/postgresql/
 email: pgsql-general@postgresql.org ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
-build-email: builds@build2.org
+build-warning-email: builds@build2.org
 builds: all
 depends: * build2 >= 0.13.0
 depends: * bpkg >= 0.13.0
