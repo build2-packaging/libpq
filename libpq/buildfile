@@ -1,7 +1,7 @@
 # file      : buildfile
 # license   : PostgreSQL License; see accompanying COPYRIGHT file
 
-./: {*/ -build/} doc{COPYRIGHT INSTALL README} manifest
+./: {*/ -build/} doc{INSTALL README} legal{COPYRIGHT} manifest
 
 # Don't install tests or the INSTALL file.
 #
