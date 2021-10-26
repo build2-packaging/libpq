@@ -68,7 +68,3 @@ $ cat libpq/pg_config.h | \
   sort -u >defined-macros
 
 $ diff defined-macros used-macros
-
-Copy upstream's auto-generated src/interfaces/libpq/{exports.list,libpqdll.def}
-to libpq/{libpqdll.map,libpqdll.def} or create them manually based on
-pq/exports.txt. Comment out the "LIBRARY LIBPQ" line in libpqdll.def.

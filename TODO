@@ -1,8 +1,5 @@
 On the revision:
 
-- Make the .map and .def files prerequisites of the libs type target and only
-  on the respective OSes. Also try to generate them on the fly.
-
 On the release:
 
   Note that this requires bumping build2 version requirement to 0.15.0.

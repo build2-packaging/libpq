@@ -1,16 +1,15 @@
 # file      : libpq/buildfile
 # license   : PostgreSQL License; see accompanying COPYRIGHT file
 
+define map: file
+map{*}: extension = map
+
 # Note that libz is only used in the backend server.
 #
 import imp_libs  = libssl%lib{ssl}
 import imp_libs += libcrypto%lib{crypto}
 
 # Exclude source code of unused features (authentication methods, etc).
-#
-# @@ When it becomes possible (probably with ad hoc rules), generate
-#    libpqdll.map and libpqdll.def on the fly from pq/exports.txt applying
-#    regex replace to its lines and adding prologue/epilogue.
 #
 lib{pq}: {h   }{*             -version} \
          {h   }{               version} \
@@ -51,8 +50,25 @@ lib{pq}: port/c{strlcpy}:        include = (!$bsd && !$macos)
 lib{pq}: pq/{h c}{*win32*                        }                     \
        port/{h c}{*win32* +getaddrinfo +inet_aton}: include = $windows
 
-libs{pq}: file{libpqdll.map}: include = ($linux || $bsd ? adhoc : false)
-libs{pq}: def{libpqdll}:      include = $windows
+libs{pq}: map{libpqdll}: include = ($linux || $bsd ? adhoc : false)
+libs{pq}: def{libpqdll}: include = $windows
+
+map{libpqdll}: pq/file{exports.txt}
+{{
+  diag gen $>
+  f = $path($>)
+  echo '{ global:'                                       >$f
+  sed -n -e 's/^\s*([^#]\S*)\s+\d+\s*$/\1;/p' $path($<) >>$f
+  echo ' local: *; };'                                  >>$f
+}}
+
+def{libpqdll}: pq/file{exports.txt}
+{{
+  diag gen $>
+  f = $path($>)
+  echo 'EXPORTS'                                                >$f
+  sed -n -e 's/^\s*([^#]\S*)\s+(\d+)\s*$/ \1 @ \2/p' $path($<) >>$f
+}}
 
 # The version file is an internal one (it is only included from pg_config.h)
 # so we don't distribute nor install it (see below).
@@ -216,7 +232,7 @@ switch $tclass, $tsys
     #
     c.loptions += -Wl,--no-undefined
 
-    c.loptions += "-Wl,--version-script=$src_base/libpqdll.map"
+    c.loptions += "-Wl,--version-script=$out_base/libpqdll.map"
 
     c.libs += -lpthread
   }
