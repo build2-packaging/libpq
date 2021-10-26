@@ -3,17 +3,6 @@ On the revision:
 - Make the .map and .def files prerequisites of the libs type target and only
   on the respective OSes. Also try to generate them on the fly.
 
-- Normalize C comments in the tests source code replacing:
-
-  /*
-   * ...
-   */
-
-  with
-
-  /* ...
-   */
-
 On the release:
 
 - Use legal{} target type for legal documentation (LICENSE, AUTHORS, etc).

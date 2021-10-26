@@ -2,16 +2,14 @@
  * license   : PostgreSQL License; see accompanying COPYRIGHT file
  */
 
-/*
- * Include the upstream package test and rename it's main() function to test()
+/* Include the upstream package test and rename it's main() function to test()
  * (see below for details).
  */
 #define main test
 #include <uri-regress.c>
 #undef main
 
-/*
- * Enable assertions.
+/* Enable assertions.
  */
 #ifdef NDEBUG
 #  undef NDEBUG
@@ -21,8 +19,7 @@
 #include <assert.h>
 #include <string.h> /* strlen() */
 
-/*
- * Usage: argv[0]
+/* Usage: argv[0]
  *
  * Read connection info strings from STDIN and call upstream test main()
  * function for each of them. The function prints the parsed connection info to
@@ -37,13 +34,11 @@ main (int argc, char* argv[])
 
   while (fgets (s, sizeof(s), stdin) != NULL)
   {
-    /*
-     * Print the conninfo string that will be tested.
+    /* Print the conninfo string that will be tested.
      */
     printf ("trying %s", s);
 
-    /*
-     * Strip the newline character and make sure it is printed to stdout.
+    /* Strip the newline character and make sure it is printed to stdout.
      */
     size_t n = strlen (s);
     if (n != 0 && s[n - 1] == '\n')
@@ -51,14 +46,12 @@ main (int argc, char* argv[])
     else
       printf ("\n");
 
-    /*
-     * Make sure the output make sense if stderr is redirected to stdout (and
+    /* Make sure the output make sense if stderr is redirected to stdout (and
      * vice versa).
      */
     fflush (stdout);
 
-    /*
-     * Run the test.
+    /* Run the test.
      *
      * Note that we need to print the trailing newline character ourselves.
      */
