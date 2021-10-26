@@ -3,8 +3,6 @@ On the revision:
 - Make the .map and .def files prerequisites of the libs type target and only
   on the respective OSes. Also try to generate them on the fly.
 
-- Canonicalize the license in the package manifest.
-
 - Disable success build emails.
 
 - Normalize C comments in the tests source code replacing:
@@ -17,8 +15,6 @@ On the revision:
 
   /* ...
    */
-
-- Fix typo in the buildfiles: 'PostgreSQL Licene' -> 'PostgreSQL License'.
 
 On the release:
 

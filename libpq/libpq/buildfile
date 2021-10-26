@@ -1,5 +1,5 @@
 # file      : libpq/buildfile
-# license   : PostgreSQL Licene; see accompanying COPYRIGHT file
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
 
 # Note that libz is only used in the backend server.
 #

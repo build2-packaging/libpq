@@ -8,7 +8,7 @@ upstream-version: 14.0
 
 project: postgresql
 summary: PostgreSQL C API client library
-license: PostgreSQL License ; Permissive free software license.
+license: PostgreSQL ; Permissive free software license.
 topics: C, PostgreSQL, SQL, relational database
 description-file: README
 url: https://www.postgresql.org/
