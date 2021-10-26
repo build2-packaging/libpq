@@ -3,8 +3,8 @@
  */
 
 /*
- * For the semantics of the following macros refer to pg_config.h.in.orig,
- * pg_config.h.win32.orig, and the upstream's configure.in.
+ * For the semantics of the following macros refer to pg_config.h.in.orig and
+ * the upstream's configure.in.
  *
  * Note that we will explicitly undefine macros that are present in the libpq
  * source code but should not be defined. While this is not technically
@@ -71,47 +71,55 @@
  */
 #ifndef _WIN32
 #  if __SIZEOF_LONG__ == 8
-#    define HAVE_LONG_INT_64 1
+#    define HAVE_LONG_INT_64       1
 #  endif
 #  ifdef __SIZEOF_LONG_LONG__
-#    define HAVE_LONG_LONG_INT 1
+#    define HAVE_LONG_LONG_INT     1
 #  endif
 #  if __SIZEOF_LONG_LONG__ == 8
-#    define HAVE_LONG_LONG_INT_64 1
+#    define HAVE_LONG_LONG_INT_64  1
 #  endif
 #  if __SIZEOF_LONG_LONG__ > __SIZEOF_DOUBLE__
-#    define MAXIMUM_ALIGNOF __SIZEOF_LONG_LONG__
+#    define MAXIMUM_ALIGNOF        __SIZEOF_LONG_LONG__
 #  else
-#    define MAXIMUM_ALIGNOF __SIZEOF_DOUBLE__
+#    define MAXIMUM_ALIGNOF        __SIZEOF_DOUBLE__
 #  endif
 #  ifdef __SIZEOF_INT128__
 #    define PG_INT128_TYPE         __int128
 #    define ALIGNOF_PG_INT128_TYPE 16
 #  endif
-#  define PG_INT64_TYPE    __INT64_TYPE__
-#  define ACCEPT_TYPE_ARG3 socklen_t
-#  define SIZEOF_SIZE_T    __SIZEOF_SIZE_T__
+#  define PG_INT64_TYPE            __INT64_TYPE__
+#  define ACCEPT_TYPE_ARG3         socklen_t
+#  define SIZEOF_SIZE_T            __SIZEOF_SIZE_T__
+#  define SIZEOF_VOID_P            __SIZEOF_POINTER__
 #else
-#  define HAVE_LONG_LONG_INT    1
-#  define HAVE_LONG_LONG_INT_64 1
-#  define MAXIMUM_ALIGNOF       8
-#  define PG_INT64_TYPE         long long int
-#  define ACCEPT_TYPE_ARG3      int
+#  define HAVE_LONG_LONG_INT       1
+#  define HAVE_LONG_LONG_INT_64    1
+#  define MAXIMUM_ALIGNOF          8
+#  define PG_INT64_TYPE            long long int
+#  define ACCEPT_TYPE_ARG3         int
 #  ifdef _WIN64
-#    define SIZEOF_SIZE_T 8
+#    define SIZEOF_SIZE_T          8
+#    define SIZEOF_VOID_P          8
 #  else
-#    define SIZEOF_SIZE_T 4
+#    define SIZEOF_SIZE_T          4
+#    define SIZEOF_VOID_P          4
 #  endif
 #endif
 
 #define INT64_MODIFIER "ll"
-#define SIZEOF_BOOL    1
 
 /*
  * Specific for FreeBSD.
  */
 #ifdef __FreeBSD__
 #  define HAVE_STRUCT_CMSGCRED 1
+
+/*
+ * Note that upstream also defines this macro for newer glibc versions (see
+ * buildfile for details).
+ */
+#  define HAVE_EXPLICIT_BZERO  1
 #endif
 
 /*
@@ -143,7 +151,6 @@
 #  define HAVE_STRTOUQ                        1
 #  define HAVE_STRUCT_SOCKADDR_SA_LEN         1
 #  define HAVE_STRUCT_SOCKADDR_STORAGE_SS_LEN 1
-#  define HAVE_SYS_SOCKIO_H                   1
 #  define HAVE_SYS_UCRED_H                    1
 #  define HAVE_UNION_SEMUN                    1
 #else
@@ -155,39 +162,33 @@
  * Specific for POSIX.
  */
 #ifndef _WIN32
-#  define HAVE_CRYPT              1
 #  define HAVE_DECL_FDATASYNC     1
 #  define HAVE_DECL_RTLD_GLOBAL   1
 #  define HAVE_DECL_RTLD_NOW      1
 #  define HAVE_FDATASYNC          1
 #  define HAVE_GETADDRINFO        1
-#  define HAVE_GETIFADDRS         1
-#  define HAVE_IFADDRS_H          1
 #  define HAVE_GETPWUID_R         1
 #  define HAVE_INET_ATON          1
 #  define HAVE_LANGINFO_H         1
 #  define HAVE_MKDTEMP            1
 #  define HAVE_NETINET_TCP_H      1
-#  define HAVE_NET_IF_H           1
 #  define HAVE_DECL_POSIX_FADVISE 1
 #  define HAVE_POSIX_FADVISE      1
 #  define HAVE_RANDOM             1
 #  define HAVE_SRANDOM            1
 #  define HAVE_STRERROR_R         1
 #  define HAVE_STRINGS_H          1
-#  define HAVE_SYS_IOCTL_H        1
 #  define HAVE_POLL               1
 #  define HAVE_POLL_H             1
-#  define HAVE_SYS_POLL_H         1
 #  define HAVE_SYS_SELECT_H       1
 #  define HAVE_SYS_UN_H           1
 #  define HAVE_TERMIOS_H          1
-#  define HAVE_UNIX_SOCKETS       1
 #  define HAVE_UNSETENV           1
-#  define USE_INTEGER_DATETIMES   1
 #  define HAVE_DLOPEN             1
 #  define HAVE_PREAD              1
 #  define HAVE_PWRITE             1
+#  define HAVE_LINK               1
+#  define HAVE_STRUCT_SOCKADDR_UN 1
 
 /*
  * Specific for Windows.
@@ -197,14 +198,11 @@
 #  define HAVE_DECL_RTLD_GLOBAL   0
 #  define HAVE_DECL_RTLD_NOW      0
 #  define HAVE_DECL_POSIX_FADVISE 0
-#  define HAVE_ISINF              1
 #  define HAVE_FUNCNAME__FUNCTION 1
-#  define USE_REPL_SNPRINTF       1
 
-/*
- * This is not a mistake, the macro is defined opposite to the norm.
- */
-#  define HAVE_GETTIMEOFDAY       1
+#  ifdef __MINGW32__
+#    define HAVE_GETTIMEOFDAY     1
+#  endif
 #endif
 
 /*
@@ -224,52 +222,48 @@
 #  define HAVE__BUILTIN_BSWAP32            1
 #  define HAVE__BUILTIN_BSWAP64            1
 #  define HAVE__BUILTIN_OP_OVERFLOW        1
+#  define HAVE_SETENV                      1
+
+/*
+ * _Static_assert() was introduced in C11. However, all the latest major
+ * compilers, except for MSVC, support it for C99 as well.
+ */
+#  define HAVE__STATIC_ASSERT 1
 #endif
 
 /*
  * Relates to the enabled OpenSSL.
  */
-#define USE_OPENSSL                1
-#define HAVE_OPENSSL_INIT_SSL      1
-#define HAVE_ASN1_STRING_GET0_DATA 1
-#define HAVE_BIO_GET_DATA          1
-#define HAVE_BIO_METH_NEW          1
-#define HAVE_SSL_CLEAR_OPTIONS     1
+#define USE_OPENSSL                   1
+#define HAVE_OPENSSL_INIT_SSL         1
+#define HAVE_ASN1_STRING_GET0_DATA    1
+#define HAVE_BIO_GET_DATA             1
+#define HAVE_BIO_METH_NEW             1
 
-#if OPENSSL_VERSION_NUMBER < 0x10100000L
-#  define HAVE_CRYPTO_LOCK 1
+#if OPENSSL_VERSION_NUMBER >= 0x10100000L
+#  define HAVE_HMAC_CTX_FREE          1
+#  define HAVE_HMAC_CTX_NEW           1
+#else
+#  define HAVE_CRYPTO_LOCK            1
 #endif
 
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
 #  define HAVE_X509_GET_SIGNATURE_NID 1
 #endif
 
-#define USE_OPENSSL_RANDOM 1
-#undef  USE_DEV_URANDOM
-#undef  USE_WIN32_RANDOM
-
 /*
  * Common for all supported OSes/compilers.
  */
 #define ENABLE_THREAD_SAFETY                   1
-#define HAVE_MEMMOVE                           1
-#define HAVE_RINT                              1
-#define HAVE_DECL_SNPRINTF                     1
-#define HAVE_DECL_VSNPRINTF                    1
+#define PG_USE_STDBOOL                         1
 #define HAVE_DECL_STRNLEN                      1
 #define HAVE_DECL_STRTOLL                      1
 #define HAVE_DECL_STRTOULL                     1
-#define HAVE_FSEEKO                            1
 #define HAVE_FUNCNAME__FUNC                    1
 #define HAVE_IPV6                              1
-#define HAVE_STDINT_H                          1
-#define HAVE_STDBOOL_H                         1
 #define HAVE_STRTOLL                           1
 #define HAVE_STRTOULL                          1
 #define HAVE_STRTOF                            1
-#define HAVE_TOWLOWER                          1
-#define HAVE_WCSTOMBS                          1
-#define HAVE_SSL_GET_CURRENT_COMPRESSION       1
 #define HAVE_STRUCT_ADDRINFO                   1
 #define HAVE_STRUCT_SOCKADDR_STORAGE           1
 #define HAVE_STRUCT_SOCKADDR_STORAGE_SS_FAMILY 1
@@ -277,16 +271,9 @@
 #define XLOG_BLCKSZ                            8192
 #define PG_KRB_SRVNAM                          "postgres"
 #define PG_PRINTF_ATTRIBUTE                    printf
-#define FLEXIBLE_ARRAY_MEMBER
 #define MEMSET_LOOP_LIMIT                      1024
 #define DEF_PGPORT                             5432
 #define DEF_PGPORT_STR                         "5432"
-
-/*
- * _Static_assert() was introduced in C11. However, all the latest major
- * compilers support it for C99 as well.
- */
-#define HAVE__STATIC_ASSERT 1
 
 /*
  * Undefined macros.
@@ -312,11 +299,6 @@
  * (<gssapi.h> just includes <gssapi/gssapi.h>).
  */
 #undef HAVE_GSSAPI_H
-
-/*
- * Integer literal LL suffix is optional for C99.
- */
-#undef HAVE_LL_CONSTANTS
 
 /*
  * Windows-specific. <crtdefs.h> is included for the latest (>= 1400) VC
@@ -371,3 +353,5 @@
  */
 #undef HAVE___STRTOLL
 #undef HAVE___STRTOULL
+
+#define pg_restrict __restrict

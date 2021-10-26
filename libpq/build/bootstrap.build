@@ -30,10 +30,10 @@ using install
 # been for the several last major version releases). And so_minor is equal to
 # the package major version.
 #
-if ($version.major == 12 && $version.minor == 1)
+if ($version.major == 14 && $version.minor == 0)
 {
   abi_major = 5
-  abi_minor = 12
+  abi_minor = 14
 }
 else
   fail "increment the ABI version?"

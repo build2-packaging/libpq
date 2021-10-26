@@ -1,6 +1,8 @@
 # file      : libpq/buildfile
 # license   : PostgreSQL Licene; see accompanying COPYRIGHT file
 
+# Note that libz is only used in the backend server.
+#
 import imp_libs  = libssl%lib{ssl}
 import imp_libs += libcrypto%lib{crypto}
 
@@ -10,15 +12,20 @@ import imp_libs += libcrypto%lib{crypto}
 #    libpqdll.map and libpqdll.def on the fly from pq/exports.txt applying
 #    regex replace to its lines and adding prologue/epilogue.
 #
-lib{pq}: {h   }{*                                     -version} \
-         {h   }{                                       version} \
-      pq/{h  c}{* -fe-gssapi-common -fe-secure-gssapi -*win32*} \
-      mb/{   c}{*                                             } \
-    port/{h  c}{*    -strlcpy -getaddrinfo -inet_aton -*win32*} \
-  common/{   c}{*                                             } \
- include/{h   }{**                                            } \
-         {def }{libpqdll                                      } \
-      pq/{file}{pg_service.conf.sample                        } \
+lib{pq}: {h   }{*             -version} \
+         {h   }{               version} \
+      pq/{h  c}{*    -fe-gssapi-common  \
+                     -fe-secure-gssapi  \
+                              -*win32*} \
+    port/{h  c}{*      -explicit_bzero  \
+                          -getaddrinfo  \
+                         -gettimeofday  \
+                            -inet_aton  \
+                              -strlcpy  \
+                              -*win32*} \
+  common/{h  c}{*                     } \
+ include/{h   }{**                    } \
+      pq/{file}{pg_service.conf.sample} \
          $imp_libs
 
 tclass = $c.target.class
@@ -29,11 +36,23 @@ bsd     = ($tclass == 'bsd')
 macos   = ($tclass == 'macos')
 windows = ($tclass == 'windows')
 
-lib{pq}: file{libpqdll.map}: include = ($linux || $bsd ? adhoc : false)
-lib{pq}: port/c{strlcpy}:    include = (!$bsd && !$macos)
+# Note that upstream also uses native explicit_bzero() on Linux for glibc
+# versions equal or greater than 2.25. It's, however, not easy to check the
+# glibc's version in the buildfile, so we always fallback to the custom
+# explicit_bzero() implementation on Linux.
+#
+# Also note that linking the native explicit_bzero() would prevent us running
+# against older glibc versions.
+#
+lib{pq}: port/c{explicit_bzero}: include = (!$bsd)
+lib{pq}: port/c{gettimeofday}:   include = ($tsys == 'win32-msvc')
+lib{pq}: port/c{strlcpy}:        include = (!$bsd && !$macos)
 
 lib{pq}: pq/{h c}{*win32*                        }                     \
        port/{h c}{*win32* +getaddrinfo +inet_aton}: include = $windows
+
+libs{pq}: file{libpqdll.map}: include = ($linux || $bsd ? adhoc : false)
+libs{pq}: def{libpqdll}:      include = $windows
 
 # The version file is an internal one (it is only included from pg_config.h)
 # so we don't distribute nor install it (see below).
@@ -80,7 +99,7 @@ switch $tclass, $tsys
 
   case 'windows', 'mingw32'
   {
-    c.poptions += -DBUILDING_DLL -DEXEC_BACKEND
+    c.poptions += -DBUILDING_DLL
     c.poptions =+ "-I$src_base/include/port/win32"
   }
   case 'windows'
@@ -88,7 +107,7 @@ switch $tclass, $tsys
     # Probably some of the *WIN* macro definitions are not really required,
     # but let's keep all of them for good measure.
     #
-    c.poptions += -DEXEC_BACKEND -D_WINDLL -D__WINDOWS__ -D__WIN32__ -D_MBCS \
+    c.poptions += -D_WINDLL -D__WINDOWS__ -D__WIN32__ -D_MBCS            \
                   -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
 
     c.poptions =+ "-I$src_base/include/port/win32_msvc" \

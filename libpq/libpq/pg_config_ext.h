@@ -3,8 +3,8 @@
  */
 
 /*
- * For the semantics of the following macros refer to pg_config_ext.h.in.orig,
- * pg_config_ext.h.win32.orig, and the upstream's configure.in.
+ * For the semantics of the following macros refer to pg_config_ext.h.in.orig
+ * and the upstream's configure.in.
  */
 
 /*

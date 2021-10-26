@@ -25,34 +25,34 @@ upstream/ subdirectory.
 The upstream package can be configured to contain a specific feature set. We
 reproduce the union of features configured for the upstream source package in
 Debian and Fedora distributions. The configuration options defining these sets
-are specified in the Debian's rules and Fedora's RPM .spec files. Note,
-that at the time of this writing the latest packaged versions are different
-(12.1 on Debian and 11.6 on Fedora). That's probably ok since 12.1 doesn't
-introduce any new configuration options comparing to 11.6. These files can be
+are specified in the Debian's rules and Fedora's RPM .spec files. Note, that
+at the time of this writing the latest packaged versions are different (14.0
+on Debian and 13.4 on Fedora). That's probably ok since 14.0 only introduces
+the --with-lz4 configuration options comparing to 13.4. These files can be
 obtained as follows:
 
-$ wget http://deb.debian.org/debian/pool/main/p/postgresql-12/postgresql-12_12.1-1.debian.tar.xz
-$ tar xf postgresql-12_12.1-1.debian.tar.xz debian/rules
+$ wget http://deb.debian.org/debian/pool/main/p/postgresql-14/postgresql-14_14.0-1.debian.tar.xz
+$ tar xf postgresql-14_14.0-1.debian.tar.xz
 
-$ wget https://kojipkgs.fedoraproject.org/packages/libpq/11.6/1.fc32/src/libpq-11.6-1.fc32.src.rpm
-$ rpm2cpio libpq-11.6-1.fc32.src.rpm | cpio -civ '*.spec'
+$ wget https://kojipkgs.fedoraproject.org//packages/libpq/13.4/2.fc36/src/libpq-13.4-2.fc36.src.rpm
+$ rpm2cpio libpq-13.4-2.fc36.src.rpm | cpio -civ '*.spec'
 
 As a side note, on Debian and Fedora the source, library, and headers are
 packaged as follows:
 
                 src            libpq   headers
-Debian/Ubuntu:  postgresql-12  libpq5  libpq-dev
+Debian/Ubuntu:  postgresql-14  libpq5  libpq-dev
 Fedora/RHEL:    libpq          libpq   libpq-devel
 
 Search for the Debian and Fedora packages at https://packages.debian.org/search
-and https://apps.fedoraproject.org/packages/.
+and https://src.fedoraproject.org/.
 
 Here are the discovered configuration options.
 
 Debian:
 
   --with-icu --with-tcl --with-perl --with-python --with-pam --with-openssl
-  --with-libxml --with-libxslt --enable-nls --enable-integer-datetimes
+  --with-libxml --with-libxslt --enable-nls --with-lz4
   --with-gssapi --with-ldap --enable-thread-safety
 
 Fedora:
@@ -65,10 +65,10 @@ suppressing the defaults:
   --with-icu --with-tcl --with-perl --with-python --with-pam --with-openssl
   --with-libxml --with-libxslt --enable-nls --with-gssapi --with-ldap
 
-We, however, drop the external dependencies that are not packaged for build2
-and end up with the following options:
+We, however, drop the external dependencies that are irrelevant for the
+library or are not packaged for build2 and end up with the following options:
 
-  --with-openssl --without-readline --without-zlib
+  --with-openssl --without-readline
 
 See the configuration options description at the "Installation Procedure" page
 (https://www.postgresql.org/docs/current/install-procedure.html).
@@ -87,9 +87,9 @@ On POSIX and for MinGW GCC:
 
 $ mkdir build
 $ cd build
-$ ../configure --with-openssl --without-readline --without-zlib >build.log 2>&1
+$ ../configure --with-openssl --without-readline >build.log 2>&1
 $ cd src/interfaces/libpq
-$ make >>../../../build.log 2>&1
+$ make VERBOSE=1 >>../../../build.log 2>&1
 
 See the "Installation from Source Code" page
 (https://www.postgresql.org/docs/current/installation.html) for details.
@@ -97,13 +97,14 @@ See the "Installation from Source Code" page
 For MSVC:
 
 Add bison and flex to PATH, if building in the git repository. Install
-OpenSSL.
+OpenSSL and zlib.
 
 > cd src\tools\msvc
 
-Edit config_default.pl to enable OpenSSL:
+Edit config_default.pl to enable OpenSSL and zlib:
 
   openssl   => 'c:\OpenSSL',    # --with-openssl=<path>
+  zlib      => 'C:\zlib64'      # --with-zlib=<path>
 
 > build libpq >>build.log 2>&1
 

@@ -24,9 +24,6 @@ would potentially bloat the distribution, uglify the buildfile, and complicate
 pg_config.h change tracking on upgrade (see below). Thus, we selectively
 symlink only the required files.
 
-$ mkdir libpq/mb
-$ ln -s ../../../upstream/src/backend/utils/mb/{encnames,wchar}.c libpq/mb
-
 $ mkdir -p libpq/include/libpq libpq/include/mb libpq/include/port
 $ ln -s ../../../upstream/src/include/{c,getaddrinfo,pg_config_manual,port,postgres_ext,postgres_fe}.h libpq/include
 $ ln -s ../../../../upstream/src/include/libpq/{libpq-fs,pqcomm}.h libpq/include/libpq
@@ -35,17 +32,17 @@ $ ln -s ../../../../upstream/src/include/port/{linux,freebsd,darwin,win32,win32_
 $ ln -s ../../../../upstream/src/include/port/{win32,win32_msvc} libpq/include/port
 
 $ mkdir libpq/common
-$ ln -s ../../../upstream/src/common/{md5,scram-common,ip,sha2_openssl,link-canary,base64,saslprep,unicode_norm}.c \
+$ ln -s ../../../upstream/src/common/{base64,cryptohash_openssl,encnames,hmac_openssl,ip,link-canary,md5,md5_common,saslprep,scram-common,string,unicode_norm,wchar}.c \
   libpq/common
+$ ln -s ../../../upstream/src/common/md5_int.h libpq/common
 
 $ mkdir libpq/port
-$ ln -s ../../../upstream/src/port/{pgstrcasecmp,snprintf,getpeereid,pg_strong_random,thread,strerror,chklocale,noblock,inet_net_ntop,strlcpy,win32setlocale,getaddrinfo,open,inet_aton,pgsleep,win32error,system}.c libpq/port
+$ ln -s ../../../upstream/src/port/{chklocale,explicit_bzero,getaddrinfo,getpeereid,gettimeofday,inet_aton,inet_net_ntop,noblock,open,pg_strong_random,pgsleep,pgstrcasecmp,snprintf,strerror,strlcpy,system,thread,win32error,win32setlocale,win32stat}.c \
+  libpq/port
 $ ln -s ../../../upstream/src/port/pthread-win32.h libpq/port
 
 $ ln -s ../../upstream/src/include/pg_config_ext.h.in libpq/pg_config_ext.h.in.orig
-$ ln -s ../../upstream/src/include/pg_config_ext.h.win32 libpq/pg_config_ext.h.win32.orig
 $ ln -s ../../upstream/src/include/pg_config.h.in libpq/pg_config.h.in.orig
-$ ln -s ../../upstream/src/include/pg_config.h.win32 libpq/pg_config.h.win32.orig
 
 $ ln -s ../../../upstream/src/interfaces/libpq/test/uri-regress.c tests/conninfo
 
@@ -58,7 +55,7 @@ a new upstream version would be a real pain. Instead we can only (un)define
 the newly introduced macros, comparing the already defined and currently used
 macro sets:
 
-$ for m in `cat libpq/pg_config.h.in.orig libpq/pg_config.h.win32.orig | \
+$ for m in `cat libpq/pg_config.h.in.orig | \
             sed -n 's/^.*#\s*\(define\|undef\)\s\{1,\}\([_A-Z0-9]\{1,\}\)\(\s.*\)\{0,1\}$/\2/p' | \
             sort -u`; do
     if grep -q -e "\b$m\b" `find -L . -name '*.h' -a ! -name 'pg_config.h' -o -name '*.c'`; then
