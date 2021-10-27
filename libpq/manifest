@@ -3,7 +3,7 @@ name: libpq
 
 # Note: remember to update doc-url below!
 #
-version: 14.0.0
+version: 14.0.0+1
 upstream-version: 14.0
 
 project: postgresql
@@ -19,6 +19,7 @@ email: pgsql-general@postgresql.org ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 build-warning-email: builds@build2.org
 builds: all
+builds: -wasm
 depends: * build2 >= 0.13.0
 depends: * bpkg >= 0.13.0
 depends: libcrypto >= 1.1.1
