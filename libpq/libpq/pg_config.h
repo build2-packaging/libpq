@@ -153,6 +153,7 @@
 #  define HAVE_STRUCT_SOCKADDR_STORAGE_SS_LEN 1
 #  define HAVE_SYS_UCRED_H                    1
 #  define HAVE_UNION_SEMUN                    1
+#  define HAVE_MEMSET_S                       1
 #else
 #  define HAVE_DECL_STRLCAT                   0
 #  define HAVE_DECL_STRLCPY                   0

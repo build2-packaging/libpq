@@ -1,0 +1,2 @@
+win32      symlink=dir
+win32_msvc symlink=dir
