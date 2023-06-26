@@ -24,8 +24,7 @@ lib{pq}: {h   }{*             -version} \
                               -*win32*} \
   common/{h  c}{*                     } \
  include/{h   }{**                    } \
-      pq/{file}{pg_service.conf.sample} \
-         $imp_libs
+      pq/{file}{pg_service.conf.sample}
 
 tclass = $c.target.class
 tsys   = $c.target.system
@@ -49,6 +48,8 @@ lib{pq}: port/c{strlcpy}:        include = (!$bsd && !$macos)
 
 lib{pq}: pq/{h c}{*win32*                        }                     \
        port/{h c}{*win32* +getaddrinfo +inet_aton}: include = $windows
+
+lib{pq}: $imp_libs
 
 libs{pq}: map{libpqdll}: include = ($linux || $bsd ? adhoc : false)
 libs{pq}: def{libpqdll}: include = $windows
@@ -191,7 +192,9 @@ switch $c.class
     # way that works across compilers/version (some -Wno-* options are only
     # recognized in newer versions).
     #
-    c.coptions += -Wno-all -Wno-extra
+    # @@ TMP: try to re-enable on next release.
+    #
+    c.coptions += -Wno-all -Wno-extra -Wno-deprecated-declarations
   }
   case 'msvc'
   {

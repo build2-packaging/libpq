@@ -3,11 +3,10 @@ name: libpq
 
 # Note: remember to update doc-url below!
 #
-version: 14.1.0
+version: 14.1.0+1
 upstream-version: 14.1
 
 project: postgresql
-priority: security
 summary: PostgreSQL C API client library
 license: PostgreSQL ; Permissive free software license.
 topics: C, PostgreSQL, SQL, relational database

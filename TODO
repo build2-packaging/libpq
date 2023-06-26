@@ -2,4 +2,12 @@ On the revision:
 
 On the release:
 
+  - Switch to using -pthread from -D_REENTRANT/-lpthread.
+
   Note that this requires bumping build2 version requirement to 0.15.0.
+
+Additional (permanent) notes:
+
+- Review '@@ TMP' notes.
+
+- Add/remove 'priority: security' manifest value, if required.
