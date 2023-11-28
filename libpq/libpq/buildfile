@@ -44,7 +44,13 @@ windows = ($tclass == 'windows')
 #
 lib{pq}: port/c{explicit_bzero}: include = (!$bsd)
 lib{pq}: port/c{gettimeofday}:   include = ($tsys == 'win32-msvc')
-lib{pq}: port/c{strlcpy}:        include = (!$bsd && !$macos)
+
+# Note that we never compile port/strlcpy.c directly but rather conditionally
+# include it from our strlcpy.c if HAVE_DECL_STRLCAT is 0 (see
+# libpq/pg_config.h for the macro definition).
+#
+lib{pq}: port/c{strlcpy}: include = adhoc
+lib{pq}:      c{strlcpy}: include = (!$bsd && !$macos)
 
 lib{pq}: pq/{h c}{*win32*                        }                     \
        port/{h c}{*win32* +getaddrinfo +inet_aton}: include = $windows
@@ -84,14 +90,7 @@ h{version}: in{version} $src_root/manifest
 #
 c.poptions += -DFRONTEND -DUNSAFE_STAT_OK -DSO_MAJOR_VERSION=$abi_major
 
-if! $windows
-  # Note that the upstream package uses the -pthread compiler/linker option.
-  # The option is unsupported by build2 so we pass -D_REENTRANT and -lpthread
-  # preprocessor/linker options instead. We also omit -D_THREAD_SAFE (synonym
-  # for -D_REENTRANT) and Solaris-specific -D_POSIX_PTHREAD_SEMANTICS.
-  #
-  c.poptions += -D_REENTRANT
-else
+if $windows
   # Note that the upstream package defines the WIN32 macro for VC only,
   # relying on the fact that MinGW GCC defines it by default. However, the
   # macro disappears from the default ones if to compile with -std=c9x (as we
@@ -237,11 +236,11 @@ switch $tclass, $tsys
 
     c.loptions += "-Wl,--version-script=$out_base/libpqdll.map"
 
-    c.libs += -lpthread
+    c.libs += -pthread
   }
 
   default
-    c.libs += -lpthread
+    c.libs += -pthread
 }
 
 # Export options.

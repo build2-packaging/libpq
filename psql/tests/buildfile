@@ -1,0 +1,4 @@
+# file      : tests/buildfile
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+./: testscript{*} $psql

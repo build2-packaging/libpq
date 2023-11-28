@@ -1,0 +1,15 @@
+# file      : tests/build/root.build
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+# We need to configure C module to obtain the target information (see below).
+#
+using c.config
+
+# Setup the psql program that we are testing.
+#
+import psql = psql%exe{psql}
+testscript{*}: test = $psql
+
+# Specify the test target for cross-testing.
+#
+test.target = $c.target

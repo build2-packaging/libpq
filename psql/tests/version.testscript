@@ -1,0 +1,8 @@
+# file      : tests/version.testscript
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+: basics
+:
+$* --version >>~%EOO%
+  %.+PostgreSQL.+%
+  EOO

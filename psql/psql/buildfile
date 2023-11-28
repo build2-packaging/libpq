@@ -1,0 +1,208 @@
+# file      : psql/buildfile
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+import libs = libpq%lib{pq}
+
+# Note that psql doesn't use openssl directly. We however import libcrypto so
+# that the <openssl/opensslv.h> included by <downstream/pg_config.h> can be
+# found.
+#
+import libs += libcrypto%lib{crypto}
+
+exe{psql}: src/{h c}{**                              -port/**} \
+      src/port/{  c}{** -strl* -win32* -getopt* -open -system} \
+       include/{h  }{**                                      } \
+    downstream/{h c}{**                 -strl* -libpq/version} \
+    downstream/{h  }{                           libpq/version}
+
+downstream/libpq/h{version}: downstream/libpq/in{version} $src_root/manifest
+{
+  C_TARGET = $c.target
+}
+
+tclass = $c.target.class
+tsys   = $c.target.system
+
+bsd     = ($tclass == 'bsd')
+macos   = ($tclass == 'macos')
+windows = ($tclass == 'windows')
+
+# Note that we never compile src/port/{strlcpy,strlcat}.c directly but rather
+# include them conditionally from our downstream/{strlcpy,strlcat}.c files if
+# HAVE_DECL_{STRLCPY,STRLCAT} macros are 0 (see downstream/pg_config.h for the
+# macro definitions).
+#
+exe{psql}:   src/port/c{strl*}:              include = adhoc
+exe{psql}: downstream/c{strl*}:              include = (!$bsd && !$macos)
+exe{psql}:   src/port/c{win32* open system}: include = $windows
+exe{psql}:   src/port/c{getopt*}:            include = ($tsys == 'win32-msvc')
+
+exe{psql}: $libs
+
+# Build options.
+#
+c.poptions += -DFRONTEND
+
+# Note that the upstream package defines the WIN32 macro for VC only. We,
+# however define it for MinGW GCC as well (see libpq's buildfile for the
+# reasoning).
+#
+if $windows
+  c.poptions += -DWIN32
+
+# Note that we need to add "-I$src_root" for the headers auto-generating
+# machinery to work properly.
+#
+c.poptions =+ "-I$out_root" "-I$src_root"                                \
+              "-I$out_base/downstream" "-I$src_base/downstream"          \
+              "-I$src_base/src/psql" "-I$src_base/include" "-I$src_base"
+
+switch $tclass, $tsys
+{
+  case 'linux'
+    c.poptions += -D_GNU_SOURCE
+
+  case 'windows', 'mingw32'
+  {
+    c.poptions =+ "-I$src_base/include/port/win32"
+  }
+  case 'windows'
+  {
+    # Probably some of the *WIN* macro definitions are not really required,
+    # but let's keep all of them for good measure.
+    #
+    c.poptions += -D__WINDOWS__ -D__WIN32__ -D_MBCS                      \
+                  -D_CRT_SECURE_NO_DEPRECATE -D_CRT_NONSTDC_NO_DEPRECATE
+
+    c.poptions =+ "-I$src_base/include/port/win32_msvc" \
+                  "-I$src_base/include/port/win32"
+  }
+}
+
+# Define path macros.
+#
+# The only paths used in psql are SYSCONFDIR and PGBINDIR (see
+# set_pglocale_pgservice(), process_psqlrc(), and get_etc_path() for details).
+# The remaining path macros still need to be defined for src/port/path.c so
+# that we can compile it.
+#
+# As it is noted in libpq's buildfile, the whole idea feels utterly broken and
+# so, similar to libpq, we just do bare minimum and wait and see.
+#
+if ($install.root != [null])
+{
+  root = $install.resolve($install.root)
+  sysconfdir = ($windows || $root != /usr ? $root/etc : /etc)
+
+  if! $regex.match("$sysconfdir", '.*(pgsql|postgresql).*')
+    sysconfdir = $sysconfdir/postgresql
+
+  pgbindir = $install.resolve($install.bin)
+
+  pgsharedir       = $install.resolve($install.data)
+  includedir       = $install.resolve($install.include)
+  pkgincludedir    = $install.resolve($install.include)/postgresql
+  includedirserver = $install.resolve($install.include)/postgresql/server
+  libdir           = $install.resolve($install.lib)
+  pkglibdir        = $install.resolve($install.lib)/postgresql
+  localedir        = $install.resolve($install.data)/locale
+  docdir           = $install.resolve($install.doc)
+  htmldir          = $install.resolve($install.doc)
+  mandir           = $install.resolve($install.man)
+}
+else
+{
+  sysconfdir       = ($windows ? $out_base : /usr/local/pgsql/etc)
+  pgbindir         = $out_base
+
+  pgsharedir       = ($windows ? '' : /usr/local/share)
+  includedir       = ($windows ? '' : /usr/local/include)
+  pkgincludedir    = ($windows ? '' : /usr/local/include/postgresql)
+  includedirserver = ($windows ? '' : /usr/local/include/postgresql/server)
+  libdir           = ($windows ? '' : /usr/local/lib)
+  pkglibdir        = ($windows ? '' : /usr/local/lib/postgresql)
+  localedir        = ($windows ? '' : /usr/local/share/locale)
+  docdir           = ($windows ? '' : /usr/local/share/doc/postgresql)
+  htmldir          = ($windows ? '' : /usr/local/share/doc/postgresql)
+  mandir           = ($windows ? '' : /usr/local/share/man)
+}
+
+# Escape backslashes and quotes in the directory paths prior to representing
+# them as C string literals.
+#
+bnd = $regex.replace($pgbindir,         '(\\|")', '\\\1')
+shd = $regex.replace($pgsharedir,       '(\\|")', '\\\1')
+scd = $regex.replace($sysconfdir,       '(\\|")', '\\\1')
+ind = $regex.replace($includedir,       '(\\|")', '\\\1')
+pid = $regex.replace($pkgincludedir,    '(\\|")', '\\\1')
+isd = $regex.replace($includedirserver, '(\\|")', '\\\1')
+lbd = $regex.replace($libdir,           '(\\|")', '\\\1')
+pld = $regex.replace($pkglibdir,        '(\\|")', '\\\1')
+lcd = $regex.replace($localedir,        '(\\|")', '\\\1')
+dcd = $regex.replace($docdir,           '(\\|")', '\\\1')
+htd = $regex.replace($htmldir,          '(\\|")', '\\\1')
+mnd = $regex.replace($mandir,           '(\\|")', '\\\1')
+
+src/port/obj{path}: c.poptions += -DSYSCONFDIR="\"$scd\""       \
+                                  -DPGBINDIR="\"$bnd\""         \
+                                  -DPGSHAREDIR="\"$shd\""       \
+                                  -DSYSCONFDIR="\"$scd\""       \
+                                  -DINCLUDEDIR="\"$ind\""       \
+                                  -DPKGINCLUDEDIR="\"$pid\""    \
+                                  -DINCLUDEDIRSERVER="\"$isd\"" \
+                                  -DLIBDIR="\"$lbd\""           \
+                                  -DPKGLIBDIR="\"$pld\""        \
+                                  -DLOCALEDIR="\"$lcd\""        \
+                                  -DDOCDIR="\"$dcd\""           \
+                                  -DHTMLDIR="\"$htd\""          \
+                                  -DMANDIR="\"$mnd\""
+
+# The _cdecl specifier used in src/port/win32env.c is not recognized by
+# MinGW GCC. Let's replace it with the equivalent __cdecl.
+#
+if $windows
+  src/port/obj{win32env}: c.poptions += -D_cdecl=__cdecl
+
+switch $c.class
+{
+  case 'gcc'
+  {
+    # Omit -fexcess-precision=standard since -std=9x implies it.
+    #
+    c.coptions += -fno-strict-aliasing -fwrapv
+
+    # Disable warnings that pop up with -Wall -Wextra. Upstream doesn't seem
+    # to care about these and it is not easy to disable specific warnings in a
+    # way that works across compilers/versions (some -Wno-* options are only
+    # recognized in newer versions). There are still some warnings left that
+    # appear for certain platforms/compilers. We pass them through but disable
+    # treating them as errors.
+    #
+    # @@ TMP: try to re-enable on next release.
+    #
+    c.coptions += -Wno-all -Wno-extra -Wno-error -Wno-deprecated-declarations
+  }
+  case 'msvc'
+  {
+    c.coptions += /GF
+
+    # Disable warnings that pop up with /W3.
+    #
+    c.coptions += /wd4018 /wd4090 /wd4244 /wd4267
+  }
+}
+
+switch $tclass, $tsys
+{
+  case 'linux' | 'macos'
+    c.libs += -lm
+
+  case 'bsd'
+    c.libs += -lexecinfo -lm -pthread
+
+  case 'windows', 'mingw32'
+    c.libs += -lws2_32
+
+  case 'windows'
+    c.libs += ws2_32.lib advapi32.lib
+}

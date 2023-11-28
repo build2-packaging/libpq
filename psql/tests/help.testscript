@@ -1,0 +1,12 @@
+# file      : tests/help.testscript
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+: basics
+:
+: Test that stdout contains at least one non-empty line.
+:
+$* --help >>~%EOO%
+  %.*
+  %.+%
+  %.*
+  EOO

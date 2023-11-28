@@ -15,7 +15,15 @@
 
 #include <stddef.h> /* offsetof() */
 
+#if defined(__linux__)
+#  include <features.h> /* __GLIBC__, __GLIBC_MINOR__ */
+#endif
+
 #include <openssl/opensslv.h> /* OPENSSL_VERSION_NUMBER */
+
+#define PACKAGE_NAME      "PostgreSQL"
+#define PACKAGE_URL       "https://www.postgresql.org/"
+#define PACKAGE_BUGREPORT "pgsql-bugs@lists.postgresql.org"
 
 /*
  * Version.
@@ -23,6 +31,7 @@
 #undef   PG_VERSION
 #undef   PG_VERSION_NUM
 #undef   PG_MAJORVERSION
+#undef   PG_VERSION_STR
 #include <libpq/version.h>
 
 /*
@@ -110,6 +119,22 @@
 #define INT64_MODIFIER "ll"
 
 /*
+ * GNU libc added strlcpy() and strlcat() in version 2.38 (in anticipation
+ * of their addition to POSIX).
+ */
+#if defined(__FreeBSD__) || \
+    defined(__APPLE__)   || \
+    (defined(__GLIBC__)       && \
+     defined(__GLIBC_MINOR__) && \
+     (__GLIBC__  > 2 || __GLIBC__ == 2 && __GLIBC_MINOR__ >= 38))
+#  define HAVE_DECL_STRLCAT 1
+#  define HAVE_DECL_STRLCPY 1
+#else
+#  define HAVE_DECL_STRLCAT 0
+#  define HAVE_DECL_STRLCPY 0
+#endif
+
+/*
  * Specific for FreeBSD.
  */
 #ifdef __FreeBSD__
@@ -142,8 +167,6 @@
  * Specific for FreeBSD and Mac OS.
  */
 #if defined(__FreeBSD__) || defined(__APPLE__)
-#  define HAVE_DECL_STRLCAT                   1
-#  define HAVE_DECL_STRLCPY                   1
 #  define STRERROR_R_INT                      1
 #  define HAVE_FLS                            1
 #  define HAVE_GETPEEREID                     1
@@ -154,9 +177,7 @@
 #  define HAVE_SYS_UCRED_H                    1
 #  define HAVE_UNION_SEMUN                    1
 #  define HAVE_MEMSET_S                       1
-#else
-#  define HAVE_DECL_STRLCAT                   0
-#  define HAVE_DECL_STRLCPY                   0
+#  define HAVE_INT_OPTRESET                   1
 #endif
 
 /*
@@ -190,6 +211,8 @@
 #  define HAVE_PWRITE             1
 #  define HAVE_LINK               1
 #  define HAVE_STRUCT_SOCKADDR_UN 1
+#  define HAVE_READLINK           1
+#  define HAVE_STRSIGNAL          1
 
 /*
  * Specific for Windows.
@@ -224,6 +247,12 @@
 #  define HAVE__BUILTIN_BSWAP64            1
 #  define HAVE__BUILTIN_OP_OVERFLOW        1
 #  define HAVE_SETENV                      1
+#  define HAVE_CLOCK_GETTIME               1
+#  define HAVE_GETOPT                      1
+#  define HAVE_GETOPT_H                    1
+#  define HAVE_GETOPT_LONG                 1
+#  define HAVE_INT_OPTERR                  1
+#  define HAVE_STRUCT_OPTION               1
 
 /*
  * _Static_assert() was introduced in C11. However, all the latest major
@@ -288,11 +317,7 @@
 #undef ENABLE_GSS
 #undef USE_LDAP
 
-/*
- * Is meaningless if NLS support is disabled (see above and libpq/buildfile for
- * details).
- */
-#undef LOCALEDIR
+#undef HAVE_LIBREADLINE
 
 /*
  * Is meaningless if GSSAPI support is disabled (see above). It also seems that
@@ -354,5 +379,53 @@
  */
 #undef HAVE___STRTOLL
 #undef HAVE___STRTOULL
+
+/*
+ * None of the supported platforms provides append_history().
+ */
+#undef HAVE_APPEND_HISTORY
+
+/*
+ * None of the supported OSes have <editline/history.h> or
+ * <editline/readline.h>.
+ */
+#undef HAVE_EDITLINE_HISTORY_H
+#undef HAVE_EDITLINE_READLINE_H
+
+/*
+ * None of the supported OSes have <history.h>.
+ */
+#undef HAVE_HISTORY_H
+#undef HAVE_HISTORY_TRUNCATE_FILE
+
+/*
+ * None of the supported OSes have <readline.h>, <readline/history.h>, or
+ * <readline/readline.h>.
+ */
+#undef HAVE_READLINE_H
+#undef HAVE_READLINE_HISTORY_H
+#undef HAVE_READLINE_READLINE_H
+
+/*
+ * None of the supported platforms provides rl_completion_append_character and
+ * rl_completion_suppress_quote global variables and rl_completion_matches().
+ */
+#undef HAVE_RL_COMPLETION_APPEND_CHARACTER
+#undef HAVE_RL_COMPLETION_MATCHES
+#undef HAVE_RL_COMPLETION_SUPPRESS_QUOTE
+
+/*
+ * None of the supported platforms provides rl_filename_quote_characters and
+ * rl_filename_quoting_function global variables and
+ * rl_filename_completion_function().
+ */
+#undef HAVE_RL_FILENAME_COMPLETION_FUNCTION
+#undef HAVE_RL_FILENAME_QUOTE_CHARACTERS
+#undef HAVE_RL_FILENAME_QUOTING_FUNCTION
+
+/*
+ * None of the supported platforms provides rl_reset_screen_size().
+ */
+#undef HAVE_RL_RESET_SCREEN_SIZE
 
 #define pg_restrict __restrict

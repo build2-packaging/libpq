@@ -1,0 +1,9 @@
+# file      : build/export.build
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+$out_root/
+{
+  include psql/
+}
+
+export $out_root/psql/$import.target

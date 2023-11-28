@@ -6,4 +6,4 @@ $out_root/
   include libpq/
 }
 
-export $out_root/libpq/lib{pq}
+export $out_root/libpq/$import.target

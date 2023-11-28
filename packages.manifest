@@ -1,2 +1,4 @@
 : 1
 location: libpq/
+:
+location: psql/

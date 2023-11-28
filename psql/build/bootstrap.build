@@ -1,0 +1,10 @@
+# file      : build/bootstrap.build
+# license   : PostgreSQL License; see accompanying COPYRIGHT file
+
+project = psql
+
+using version
+using config
+using dist
+using test
+using install

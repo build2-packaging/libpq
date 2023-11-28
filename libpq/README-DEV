@@ -4,8 +4,8 @@ understanding will be useful when upgrading to a new upstream version. See
 
 The upstream package builds the common and ports static libraries and links
 them to the libpq library. These static libraries are generic enough to fit
-all the binaries built by the package. We will build libpq selecting only the
-required static libraries source files, relying on the linker diagnostics
+all the binaries built by the package. We will build libpq by only selecting
+the required static libraries source files, relying on the linker diagnostics
 (unresolved symbol errors, etc).
 
 Symlink the required upstream components and provide our own implementations
@@ -19,26 +19,27 @@ directory prefixes.
 
 $ ln -s ../../upstream/src/interfaces/libpq libpq/pq
 
-Note that while we could symlink the upstream's top source directories, this
-would potentially bloat the distribution, uglify the buildfile, and complicate
-pg_config.h change tracking on upgrade (see below). Thus, we selectively
-symlink only the required files.
+Note that symlinking all the upstream's top source directories is a bad idea
+since this would potentially bloat the distribution, uglify the buildfile, and
+complicate pg_config.h change tracking on upgrade (see below). Also note that
+some of the source files are shared with the psql package and this sharing
+doesn't align with such an approach. Thus, we selectively symlink only the
+required files.
 
 $ mkdir -p libpq/include/libpq libpq/include/mb libpq/include/port
 $ ln -s ../../../upstream/src/include/{c,getaddrinfo,pg_config_manual,port,postgres_ext,postgres_fe}.h libpq/include
+$ ln -s ../../../upstream/src/include/common libpq/include
 $ ln -s ../../../../upstream/src/include/libpq/{libpq-fs,pqcomm}.h libpq/include/libpq
 $ ln -s ../../../../upstream/src/include/mb/pg_wchar.h libpq/include/mb
 $ ln -s ../../../../upstream/src/include/port/{linux,freebsd,darwin,win32,win32_port,pg_bswap}.h libpq/include/port
 $ ln -s ../../../../upstream/src/include/port/{win32,win32_msvc} libpq/include/port
 
 $ mkdir libpq/common
-$ ln -s ../../../upstream/src/common/{base64,cryptohash_openssl,encnames,hmac_openssl,ip,link-canary,md5,md5_common,saslprep,scram-common,string,unicode_norm,wchar}.c \
-  libpq/common
+$ ln -s ../../../upstream/src/common/{base64,cryptohash_openssl,encnames,hmac_openssl,ip,link-canary,md5,md5_common,saslprep,scram-common,string,unicode_norm,wchar}.c libpq/common
 $ ln -s ../../../upstream/src/common/md5_int.h libpq/common
 
 $ mkdir libpq/port
-$ ln -s ../../../upstream/src/port/{chklocale,explicit_bzero,getaddrinfo,getpeereid,gettimeofday,inet_aton,inet_net_ntop,noblock,open,pg_strong_random,pgsleep,pgstrcasecmp,snprintf,strerror,strlcpy,system,thread,win32error,win32setlocale,win32stat}.c \
-  libpq/port
+$ ln -s ../../../upstream/src/port/{chklocale,explicit_bzero,getaddrinfo,getpeereid,gettimeofday,inet_aton,inet_net_ntop,noblock,open,pg_strong_random,pgsleep,pgstrcasecmp,snprintf,strerror,strlcpy,system,thread,win32error,win32setlocale,win32stat}.c libpq/port
 $ ln -s ../../../upstream/src/port/pthread-win32.h libpq/port
 
 $ ln -s ../../upstream/src/include/pg_config_ext.h.in libpq/pg_config_ext.h.in.orig
@@ -58,7 +59,7 @@ macro sets:
 $ for m in `cat libpq/pg_config.h.in.orig | \
             sed -n 's/^.*#\s*\(define\|undef\)\s\{1,\}\([_A-Z0-9]\{1,\}\)\(\s.*\)\{0,1\}$/\2/p' | \
             sort -u`; do
-    if grep -q -e "\b$m\b" `find -L . -name '*.h' -a ! -name 'pg_config.h' -o -name '*.c'`; then
+    if grep -q -e "\b$m\b" `find -L . ../psql -name '*.h' -a ! -name 'pg_config.h' -o -name '*.c'`; then
       echo "$m"
     fi
   done >used-macros

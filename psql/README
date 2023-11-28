@@ -1,0 +1,21 @@
+PostgreSQL is an object-relational SQL database management system with psql
+being its terminal-based front-end. It enables the user to type in queries
+interactively, issue them to PostgreSQL, and see the query results.
+Alternatively, input can be from a file or from command line arguments. For
+more information see:
+
+https://www.postgresql.org/
+
+This package contains the original psql program source code overlaid with the
+build2-based build system and packaged for the build2 package manager (bpkg).
+
+See the INSTALL file for the prerequisites and installation instructions.
+
+Send questions, bug reports, or any other feedback about the program itself to
+the PostgreSQL mailing lists. Send build system and packaging-related feedback
+to the packaging@build2.org mailing list (see https://lists.build2.org for
+posting guidelines, etc).
+
+The packaging of PostgreSQL for build2 is tracked in a Git repository at:
+
+https://git.build2.org/cgit/packaging/postgresql/

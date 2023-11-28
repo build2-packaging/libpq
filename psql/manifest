@@ -1,0 +1,26 @@
+: 1
+name: psql
+
+# Note: remember to update doc-url below!
+#
+version: 14.1.0+2
+upstream-version: 14.1
+
+project: postgresql
+summary: PostgreSQL interactive terminal
+license: PostgreSQL ; Permissive free software license.
+topics: PostgreSQL, SQL, relational database
+description-file: README
+url: https://www.postgresql.org/
+doc-url: https://www.postgresql.org/docs/14/app-psql.html
+src-url: https://git.build2.org/cgit/packaging/postgresql/postgresql/tree/psql/
+package-url: https://git.build2.org/cgit/packaging/postgresql/
+email: pgsql-general@lists.postgresql.org ; Mailing list.
+package-email: packaging@build2.org ; Mailing list.
+build-error-email: builds@build2.org
+builds: all
+builds: -wasm
+depends: * build2 >= 0.15.0
+depends: * bpkg >= 0.15.0
+depends: libpq == $
+depends: libcrypto >= 1.1.1

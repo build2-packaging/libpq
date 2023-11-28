@@ -1,0 +1,19 @@
+/* file      : psql/downstream/libpq/version.h.in -*- C -*-
+ * license   : PostgreSQL License; see accompanying COPYRIGHT file
+ */
+
+#ifndef PG_MAJORVERSION /* Note: using the version macro itself. */
+
+#define PG_VERSION "$psql.version.major$.$psql.version.minor$"
+
+/*
+ * For example, 120001 for 12.1.
+ */
+#define PG_VERSION_NUM (10000 * $psql.version.major$ + $psql.version.minor$)
+
+#define PG_MAJORVERSION "$psql.version.major$"
+
+
+#define PG_VERSION_STR PACKAGE_NAME " $psql.version.project$ on $C_TARGET$"
+
+#endif /* PG_MAJORVERSION */

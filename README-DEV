@@ -3,8 +3,8 @@ build2. In particular, this understanding will be useful when upgrading to a
 new upstream version.
 
 The upstream package contains the PostgreSQL server, libpq library, and client
-utilities. Currently, we only package libpq (see libpq/README-DEV for
-details).
+utilities. Currently, we only package libpq and psql (see the respective
+README-DEV files for details).
 
 We add the upstream package as a git submodule and symlink the required files
 and subdirectories into the build2 package subdirectories. Then, when required,
@@ -25,24 +25,28 @@ upstream/ subdirectory.
 The upstream package can be configured to contain a specific feature set. We
 reproduce the union of features configured for the upstream source package in
 Debian and Fedora distributions. The configuration options defining these sets
-are specified in the Debian's rules and Fedora's RPM .spec files. Note, that
-at the time of this writing the latest packaged versions are different (14.0
-on Debian and 13.4 on Fedora). That's probably ok since 14.0 only introduces
-the --with-lz4 configuration options comparing to 13.4. These files can be
-obtained as follows:
+are specified in the Debian's rules and Fedora's RPM .spec files. These files
+can be obtained as follows:
 
 $ wget http://deb.debian.org/debian/pool/main/p/postgresql-14/postgresql-14_14.0-1.debian.tar.xz
 $ tar xf postgresql-14_14.0-1.debian.tar.xz
 
-$ wget https://kojipkgs.fedoraproject.org//packages/libpq/13.4/2.fc36/src/libpq-13.4-2.fc36.src.rpm
-$ rpm2cpio libpq-13.4-2.fc36.src.rpm | cpio -civ '*.spec'
+$ wget https://kojipkgs.fedoraproject.org/packages/libpq/14.1/2.fc36/src/libpq-14.1-2.fc36.src.rpm
+$ rpm2cpio libpq-14.1-2.fc36.src.rpm | cpio -civ '*.spec'
 
-As a side note, on Debian and Fedora the source, library, and headers are
-packaged as follows:
+$ wget https://kojipkgs.fedoraproject.org/packages/postgresql/14.1/3.fc36/src/postgresql-14.1-3.fc36.src.rpm
+$ rpm2cpio postgresql-14.1-3.fc36.src.rpm | cpio -civ '*.spec'
 
-                src            libpq   headers
-Debian/Ubuntu:  postgresql-14  libpq5  libpq-dev
+Note that on Fedora libpq and psql are build from the separate source RPM
+packages and so by using the different RPM specs.
+
+As a side note, on Debian and Fedora the source, library, headers, and program
+are packaged as follows:
+
+                src            libpq   headers     psql
+Debian/Ubuntu:  postgresql-11  libpq5  libpq-dev   postgresql-client-11
 Fedora/RHEL:    libpq          libpq   libpq-devel
+                postgresql                         postgresql
 
 Search for the Debian and Fedora packages at https://packages.debian.org/search
 and https://src.fedoraproject.org/.
@@ -57,21 +61,29 @@ Debian:
 
 Fedora:
 
-  --with-ldap --with-openssl --with-gssapi --enable-nls --without-readline
+  libpq:      --with-ldap --with-openssl --with-gssapi --enable-nls
+              --without-readline
+
+  postgresql: --disable-rpath --with-tcl --with-ldap --with-openssl --with-pam
+              --with-gssapi --with-ossp-uuid --with-libxml --with-libxslt
+              --enable-nls --enable-dtrace --with-selinux --with-system-tzdata
+              --datadir --with-systemd --with-icu --with-llvm --with-python
 
 The union of these feature sets translates into the following options, after
 suppressing the defaults:
 
   --with-icu --with-tcl --with-perl --with-python --with-pam --with-openssl
   --with-libxml --with-libxslt --enable-nls --with-gssapi --with-ldap
+  --with-ossp-uuid --enable-dtrace --enable-dtrace --with-selinux
+  --with-system-tzdata --datadir --with-systemd --with-llvm
 
-We, however, drop the external dependencies that are irrelevant for the
-library or are not packaged for build2 and end up with the following options:
+We, however, drop the external dependencies that are irrelevant for libpq and
+psql or are not packaged for build2 and end up with the following options:
 
-  --with-openssl --without-readline
+  --with-ssl=openssl --without-readline --without-zlib
 
 See the configuration options description at the "Installation Procedure" page
-(https://www.postgresql.org/docs/current/install-procedure.html).
+(https://www.postgresql.org/docs/14/install-procedure.html).
 
 Normally, when packaging a project, we need to replace some auto-generated
 headers with our own implementations and deduce compilation/linking options.
@@ -87,12 +99,14 @@ On POSIX and for MinGW GCC:
 
 $ mkdir build
 $ cd build
-$ ../configure --with-openssl --without-readline >build.log 2>&1
+$ ../configure --with-ssl=openssl --without-readline --without-zlib >build.log 2>&1
 $ cd src/interfaces/libpq
+$ make VERBOSE=1 >>../../../build.log 2>&1
+$ cd ../../bin/psql
 $ make VERBOSE=1 >>../../../build.log 2>&1
 
 See the "Installation from Source Code" page
-(https://www.postgresql.org/docs/current/installation.html) for details.
+(https://www.postgresql.org/docs/14/installation.html) for details.
 
 For MSVC:
 
@@ -101,16 +115,15 @@ OpenSSL and zlib.
 
 > cd src\tools\msvc
 
-Edit config_default.pl to enable OpenSSL and zlib:
+Edit config_default.pl to enable OpenSSL:
 
   openssl   => 'c:\OpenSSL',    # --with-openssl=<path>
-  zlib      => 'C:\zlib64'      # --with-zlib=<path>
 
 > build libpq >>build.log 2>&1
+> build psql >>build.log 2>&1
 
-See the "Building with Visual C++ or the Microsoft Windows SDK" page
-(https://www.postgresql.org/docs/current/install-windows-full.html) for
-details.
+See the "Installation from Source Code on Windows" page
+(https://www.postgresql.org/docs/14/install-windows.html) for details.
 
 When the packaging is complete, build all the project packages in source tree
 and make sure that no PostgreSQL headers are included from the system, running
