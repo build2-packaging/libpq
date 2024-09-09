@@ -3,7 +3,7 @@ name: psql
 
 # Note: remember to update doc-url below!
 #
-version: 14.1.0+2
+version: 14.1.0+3
 upstream-version: 14.1
 
 project: postgresql
