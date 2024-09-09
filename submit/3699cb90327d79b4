@@ -1,0 +1,7 @@
+: 1
+name: psql
+version: 14.1.0+3
+upstream-version: 14.1
+project: postgresql
+summary: PostgreSQL interactive terminal
+license: PostgreSQL; Permissive free software license.
