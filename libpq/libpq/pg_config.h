@@ -267,7 +267,6 @@
 #define USE_OPENSSL                   1
 #define HAVE_OPENSSL_INIT_SSL         1
 #define HAVE_ASN1_STRING_GET0_DATA    1
-#define HAVE_BIO_GET_DATA             1
 #define HAVE_BIO_METH_NEW             1
 
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L

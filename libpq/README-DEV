@@ -13,11 +13,14 @@ for auto-generated headers:
 
 $ ln -s ../upstream/COPYRIGHT
 
-Note that we symlink the libpq directory under the different name not to
-confuse the headers auto-generating machinery while it maps the header
-directory prefixes.
+Note that we copy the libpq directory under the different name not to confuse
+the headers auto-generating machinery while it maps the header directory
+prefixes.
 
-$ ln -s ../../upstream/src/interfaces/libpq libpq/pq
+$ mkdir -p libpq/pq
+$ pushd libpq/pq
+$ ln -s ../../../upstream/src/interfaces/libpq/{*.{h,c},exports.txt,pg_service.conf.sample} ./
+$ popd
 
 Note that symlinking all the upstream's top source directories is a bad idea
 since this would potentially bloat the distribution, uglify the buildfile, and
@@ -46,6 +49,25 @@ $ ln -s ../../upstream/src/include/pg_config_ext.h.in libpq/pg_config_ext.h.in.o
 $ ln -s ../../upstream/src/include/pg_config.h.in libpq/pg_config.h.in.orig
 
 $ ln -s ../../../upstream/src/interfaces/libpq/test/uri-regress.c tests/conninfo
+
+We also apply the following patches:
+
+1) Use BIO_{get,set}_app_data instead of BIO_{get,set}_data (see commit
+   c82207a548db at https://git.postgresql.org/gitweb/?p=postgresql.git for
+   details):
+
+   $ mv libpq/pq/fe-secure-openssl.c libpq/pq/fe-secure-openssl.c.orig
+   $ cp libpq/pq/fe-secure-openssl.c.orig libpq/pq/fe-secure-openssl.c
+
+   $ git apply bio-get-set-app-data.patch
+
+   Note that the upstream 14.11 version includes this patch (see
+   https://www.postgresql.org/message-id/CAKFQuwai8N6KHvJ2-RqupF6MiqSEgVy61bsWYWqZUQDN-H36LA%40mail.gmail.com
+   for details).
+
+Note that the above patches are produced by the following commands:
+
+$ git diff ><patch-path>
 
 Create libpq/{pg_config,pg_config_ext,pg_config_os,pg_config_paths}.h using as
 a base the upstream's auto-generated headers and/or the corresponding
