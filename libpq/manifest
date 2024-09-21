@@ -3,7 +3,7 @@ name: libpq
 
 # Note: remember to update doc-url below!
 #
-version: 14.1.0+4
+version: 14.1.0+5
 upstream-version: 14.1
 
 project: postgresql
@@ -24,3 +24,11 @@ depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
 depends: libcrypto >= 1.1.1
 depends: libssl >= 1.1.1
+
+# System package mapping.
+#
+# Let's map the distribution package X.Y version to the bpkg package X.Y.0
+# version.
+#
+debian-to-downstream-version: /(.*)/\1.0/
+fedora-to-downstream-version: /(.*)/\1.0/

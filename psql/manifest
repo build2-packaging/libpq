@@ -3,7 +3,7 @@ name: psql
 
 # Note: remember to update doc-url below!
 #
-version: 14.1.0+4
+version: 14.1.0+5
 upstream-version: 14.1
 
 project: postgresql
@@ -24,3 +24,23 @@ depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0
 depends: libpq == $
 depends: libcrypto >= 1.1.1
+
+# System package mapping.
+
+# Note that versioning of the postgresql-client meta-package differs from that
+# of the underlying implementation package and, if used, would require the
+# package version mapping for each distribution version. Thus, we just map the
+# package names per distribution versions.
+#
+debian_13-name: postgresql-client
+debian_13-to-downstream-version: /(.*)/16.0.0/
+debian_12-name: postgresql-client-15
+debian_11-name: postgresql-client-13
+ubuntu_24-name: postgresql-client-16
+ubuntu_22-name: postgresql-client-14
+
+# Let's map the distribution package X.Y version to the bpkg package X.Y.0
+# version.
+#
+debian-to-downstream-version: /(.*)/\1.0/
+fedora-to-downstream-version: /(.*)/\1.0/
