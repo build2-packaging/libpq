@@ -89,7 +89,7 @@ switch $tclass, $tsys
 # As it is noted in libpq's buildfile, the whole idea feels utterly broken and
 # so, similar to libpq, we just do bare minimum and wait and see.
 #
-if ($install.root != [null])
+if ($install.root != [null] && !$install.relocatable)
 {
   root = $install.resolve($install.root)
   sysconfdir = ($windows || $root != /usr ? $root/etc : /etc)
@@ -112,8 +112,10 @@ if ($install.root != [null])
 }
 else
 {
-  sysconfdir       = ($windows ? $out_base : /usr/local/pgsql/etc)
-  pgbindir         = $out_base
+  d = (!$install.relocatable ? $out_base : '')
+
+  sysconfdir       = ($windows ? $d : /usr/local/pgsql/etc)
+  pgbindir         = $d
 
   pgsharedir       = ($windows ? '' : /usr/local/share)
   includedir       = ($windows ? '' : /usr/local/include)

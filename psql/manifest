@@ -3,7 +3,7 @@ name: psql
 
 # Note: remember to update doc-url below!
 #
-version: 14.1.0+5
+version: 14.1.0+6
 upstream-version: 14.1
 
 project: postgresql
@@ -18,7 +18,7 @@ package-url: https://git.build2.org/cgit/packaging/postgresql/
 email: pgsql-general@lists.postgresql.org ; Mailing list.
 package-email: packaging@build2.org ; Mailing list.
 build-error-email: builds@build2.org
-builds: all
+builds: all relocatable
 builds: -wasm
 depends: * build2 >= 0.15.0
 depends: * bpkg >= 0.15.0

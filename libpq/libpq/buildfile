@@ -154,7 +154,12 @@ switch $tclass, $tsys
 # Windows the default path doesn't make any sense so let's make it empty
 # instead.
 #
-if ($install.root != [null])
+# Note that the upstream package doesn't support dynamic resolution of a
+# relative SYSCONFDIR at runtime (against the library's path or some such).
+# Thus, for the relocatable installation we proceed in the same way as if
+# install.root is [null].
+#
+if ($install.root != [null] && !$install.relocatable)
 {
   root = $install.resolve($install.root)
   sysconfdir = ($windows || $root != /usr ? $root/etc : /etc)

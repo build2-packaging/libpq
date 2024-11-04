@@ -2,7 +2,7 @@ On the revision:
 
 On the release:
 
-  - When upgrade to 4.11 or above, drop the bio-get-set-app-data patch.
+  - When upgrade to 14.11 or above, drop the bio-get-set-app-data patch.
 
   Note that here we record items that require bumping build2 version
   requirement to the latest released version of the toolchain.
